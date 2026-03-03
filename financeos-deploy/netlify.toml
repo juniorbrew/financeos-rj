@@ -4,6 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  SECRETS_SCAN_OMIT_KEYS = "STRIPE_WEBHOOK_SECRET"
 
 [[redirects]]
   from = "/api/*"
