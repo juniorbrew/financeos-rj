@@ -3726,11 +3726,12 @@
     }), bgs.length === 0 && /* @__PURE__ */ import_react.default.createElement("p", { style: { color: "var(--text2)" } }, "Nenhum or\xE7amento configurado.")));
   }
   function GoalsPage({ goals, setGoals, fmt: fmt2, fmtDate: fmtDate2, isPro = true, onUpgrade: onUpgrade2 }) {
+    const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
     const [modal, setModal] = (0, import_react.useState)(null);
     const [confirm, setConfirm] = (0, import_react.useState)(null);
     const [selectedGoal, setSelectedGoal] = (0, import_react.useState)(null);
     const [form, setForm] = (0, import_react.useState)({ name: "", target_amount: "", current_amount: "", deadline: "" });
-    const [depositForm, setDepositForm] = (0, import_react.useState)({ amount: "", date: TODAY, notes: "" });
+    const [depositForm, setDepositForm] = (0, import_react.useState)({ amount: "", date: today, notes: "" });
     const [editDeposit, setEditDeposit] = (0, import_react.useState)(null);
     const f = (k, v) => setForm((p) => __spreadProps(__spreadValues({}, p), { [k]: v }));
     const df = (k, v) => setDepositForm((p) => __spreadProps(__spreadValues({}, p), { [k]: v }));
@@ -3771,7 +3772,7 @@
         const current_amount = newDeposits.reduce((s, d) => s + d.amount, 0);
         return __spreadProps(__spreadValues({}, prev), { deposits: newDeposits, current_amount });
       });
-      setDepositForm({ amount: "", date: TODAY, notes: "" });
+      setDepositForm({ amount: "", date: today, notes: "" });
       setEditDeposit(null);
       setModal("detail");
     };
@@ -3794,7 +3795,7 @@
     };
     const openDeposit = (g) => {
       setSelectedGoal(g);
-      setDepositForm({ amount: "", date: TODAY, notes: "" });
+      setDepositForm({ amount: "", date: today, notes: "" });
       setEditDeposit(null);
       setModal("deposit");
     };
