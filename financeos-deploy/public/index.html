@@ -2762,7 +2762,7 @@
     const [drawerOpen, setDrawerOpen] = (0, import_react.useState)(false);
     const [openNewTx, setOpenNewTx] = (0, import_react.useState)(false);
     const [accs, setAccs] = (0, import_react.useState)(ud.accs);
-    const [cats, setCats2] = (0, import_react.useState)(ud.cats);
+    const [cats, setCats] = (0, import_react.useState)(ud.cats);
     const [ccs, setCcs] = (0, import_react.useState)(ud.ccs);
     const [bills, setBills] = (0, import_react.useState)(ud.bills);
     const [txs, setTxs] = (0, import_react.useState)(ud.txs);
@@ -2849,7 +2849,7 @@
       { id: "users", label: "Usu\xE1rios", icon: "users" },
       { id: "settings", label: "Configura\xE7\xF5es", icon: "settings" }
     ];
-    const shared = { accs, setAccs, cats, setCats: setCats2, ccs, setCcs, bills, setBills, txs, setTxs, bgs, setBgs, goals, setGoals, users, setUsers, computeBalance, curr, prev, fmt, fmtDate, fmtShort };
+    const shared = { accs, setAccs, cats, setCats, ccs, setCcs, bills, setBills, txs, setTxs, bgs, setBgs, goals, setGoals, users, setUsers, computeBalance, curr, prev, fmt, fmtDate, fmtShort };
     const PAGES = {
       dashboard: /* @__PURE__ */ import_react.default.createElement(DashboardPage, __spreadProps(__spreadValues({}, shared), { totalLiquid, totalAssets, saving, alerts })),
       transactions: /* @__PURE__ */ import_react.default.createElement(TransactionsPage, __spreadProps(__spreadValues({}, shared), { openNewOnMount: openNewTx, onNewTxOpened: () => setOpenNewTx(false) })),
@@ -3071,7 +3071,7 @@
       }
     ), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "cat-inline-save", onClick: handleCreate }, "Criar"), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "cat-inline-cancel", onClick: () => setOpen(false) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 14 }))));
   }
-  function TransactionsPage({ accs, cats, ccs, bills, setBills, txs, setTxs, computeBalance, curr, fmt: fmt2, fmtDate: fmtDate2, fmtShort: fmtShort2, openNewOnMount, onNewTxOpened, isPro = true, onUpgrade: onUpgrade2 }) {
+  function TransactionsPage({ accs, cats, setCats, ccs, bills, setBills, txs, setTxs, computeBalance, curr, fmt: fmt2, fmtDate: fmtDate2, fmtShort: fmtShort2, openNewOnMount, onNewTxOpened, isPro = true, onUpgrade: onUpgrade2 }) {
     var _a, _b, _c;
     const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
     const blank = { description: "", amount: "", date: today, account_id: ((_a = accs[0]) == null ? void 0 : _a.id) || "", category_id: "", credit_card_id: ((_b = ccs[0]) == null ? void 0 : _b.id) || "", transfer_to: ((_c = accs[1]) == null ? void 0 : _c.id) || "", status: "paid", notes: "", installments: "1" };
@@ -3300,7 +3300,7 @@
       return true;
     });
   }
-  function CardsPage({ ccs, setCcs, txs, setTxs, bills, setBills, cats, accs, computeBalance, fmt: fmt2, fmtDate: fmtDate2, isPro = true, onUpgrade: onUpgrade2 }) {
+  function CardsPage({ ccs, setCcs, txs, setTxs, bills, setBills, cats, setCats, accs, computeBalance, fmt: fmt2, fmtDate: fmtDate2, isPro = true, onUpgrade: onUpgrade2 }) {
     const [cardModal, setCardModal] = (0, import_react.useState)(null);
     const [expenseModal, setExpenseModal] = (0, import_react.useState)(null);
     const [confirm, setConfirm] = (0, import_react.useState)(null);
@@ -3626,7 +3626,7 @@
       }), items.length > 0 && /* @__PURE__ */ import_react.default.createElement("tr", { style: { borderTop: "1px solid var(--border2)" } }, /* @__PURE__ */ import_react.default.createElement("td", { colSpan: 3, style: { fontWeight: 700, fontSize: 13, paddingTop: 10 } }, "Total"), /* @__PURE__ */ import_react.default.createElement("td", { style: { fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--red)", paddingTop: 10 } }, "\u2212", fmt2(b.total_amount))))))));
     })));
   }
-  function BudgetsPage({ bgs, setBgs, cats, txs, fmt: fmt2, isPro = true, onUpgrade: onUpgrade2 }) {
+  function BudgetsPage({ bgs, setBgs, cats, setCats, txs, fmt: fmt2, isPro = true, onUpgrade: onUpgrade2 }) {
     const [modal, setModal] = (0, import_react.useState)(null);
     const [confirm, setConfirm] = (0, import_react.useState)(null);
     const [form, setForm] = (0, import_react.useState)({ category_id: "", monthly_limit: "" });
@@ -3768,19 +3768,19 @@
       return /* @__PURE__ */ import_react.default.createElement("tr", { key: t.id }, /* @__PURE__ */ import_react.default.createElement("td", { style: { fontSize: 12, color: "var(--text2)", fontFamily: "var(--font-mono)" } }, fmtDate2(t.date)), /* @__PURE__ */ import_react.default.createElement("td", { style: { fontWeight: 500 } }, t.description), /* @__PURE__ */ import_react.default.createElement("td", null, /* @__PURE__ */ import_react.default.createElement(Badge, { color: tm.color }, tm.label)), /* @__PURE__ */ import_react.default.createElement("td", { style: { fontSize: 12, color: "var(--text2)" } }, (acc == null ? void 0 : acc.name) || (cc == null ? void 0 : cc.name) || "\u2014"), /* @__PURE__ */ import_react.default.createElement("td", { className: t.type === "income" ? "amt-pos" : t.type === "transfer" ? "amt-neu" : "amt-neg" }, t.type === "income" ? "+" : t.type === "transfer" ? "\u2194" : "\u2212", fmt2(t.amount)));
     }), mt.length === 0 && /* @__PURE__ */ import_react.default.createElement("tr", null, /* @__PURE__ */ import_react.default.createElement("td", { colSpan: 5, style: { padding: 40, textAlign: "center", color: "var(--text2)" } }, "Sem transa\xE7\xF5es neste per\xEDodo."))))));
   }
-  function CategoriesPage({ cats, setCats: setCats2 }) {
+  function CategoriesPage({ cats, setCats }) {
     const [modal, setModal] = (0, import_react.useState)(null);
     const [confirm, setConfirm] = (0, import_react.useState)(null);
     const [form, setForm] = (0, import_react.useState)({ name: "", type: "expense" });
     const f = (k, v) => setForm((p) => __spreadProps(__spreadValues({}, p), { [k]: v }));
     const save = () => {
       if (!form.name) return;
-      if (modal === "new") setCats2((c) => [...c, __spreadProps(__spreadValues({}, form), { id: uid(), tenant_id: TID })]);
-      else setCats2((c) => c.map((cat) => cat.id === form.id ? __spreadValues({}, form) : cat));
+      if (modal === "new") setCats((c) => [...c, __spreadProps(__spreadValues({}, form), { id: uid(), tenant_id: TID })]);
+      else setCats((c) => c.map((cat) => cat.id === form.id ? __spreadValues({}, form) : cat));
       setModal(null);
     };
     const del = (id) => {
-      setCats2((c) => c.filter((cat) => cat.id !== id));
+      setCats((c) => c.filter((cat) => cat.id !== id));
       setConfirm(null);
     };
     const groups = [
