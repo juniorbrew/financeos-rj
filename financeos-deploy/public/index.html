@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><!-- build:20260304-041314 -->
+<html lang="pt-BR"><!-- build:20260304-111314 -->
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
@@ -2242,6 +2242,28 @@
     }).join(" ");
     return /* @__PURE__ */ import_react.default.createElement("svg", { width, height, style: { overflow: "visible" } }, /* @__PURE__ */ import_react.default.createElement("polyline", { points: pts, fill: "none", stroke: color, strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round" }));
   }
+  var QTX_INP = {
+    width: "100%",
+    background: "var(--surface2)",
+    border: "1px solid var(--border)",
+    borderRadius: 8,
+    padding: "9px 11px",
+    color: "var(--text)",
+    fontFamily: "inherit",
+    fontSize: 16,
+    outline: "none",
+    boxSizing: "border-box"
+  };
+  var QTX_LBL = {
+    fontSize: 10,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    color: "var(--text2)",
+    marginBottom: 4,
+    display: "block"
+  };
+  var SubField = ({ label, children, style }) => /* @__PURE__ */ import_react.default.createElement("div", { style: __spreadValues({ display: "flex", flexDirection: "column" }, style) }, /* @__PURE__ */ import_react.default.createElement("span", { style: QTX_LBL }, label), children);
   function QuickTxModal({ accs, cats, setCats, ccs, bills, setBills, txs, setTxs, computeBalance, fmt: fmt2, fmtDate: fmtDate2, onClose, initialTab = "income" }) {
     var _a, _b, _c, _d;
     const TABS = [
@@ -2355,20 +2377,8 @@
       }
       setForm(__spreadProps(__spreadValues({}, blank), { date: form.date }));
     };
-    const inp = {
-      width: "100%",
-      background: "var(--surface2)",
-      border: "1px solid var(--border)",
-      borderRadius: 8,
-      padding: "9px 11px",
-      color: "var(--text)",
-      fontFamily: "inherit",
-      fontSize: 14,
-      outline: "none",
-      boxSizing: "border-box"
-    };
-    const lbl = { fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text2)", marginBottom: 4, display: "block" };
-    const SubField = ({ label, children, style }) => /* @__PURE__ */ import_react.default.createElement("div", { style: __spreadValues({ display: "flex", flexDirection: "column" }, style) }, /* @__PURE__ */ import_react.default.createElement("span", { style: lbl }, label), children);
+    const inp = QTX_INP;
+    const lbl = QTX_LBL;
     return /* @__PURE__ */ import_react.default.createElement(
       "div",
       {
