@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>FinanceOS — Gestão Financeira</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f0b429'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='serif' fill='%23000'>F</text></svg>"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
   <style id="app-css">
@@ -947,9 +945,8 @@
   <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;"><div style="width:40px;height:40px;border:3px solid #f0b429;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div><div style="color:#f0b429;font-size:14px;letter-spacing:0.1em;font-family:sans-serif;">CARREGANDO...</div></div></div>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
-  <script>var { useState, useEffect, useMemo, useCallback, useRef } = React;</script>
-  <script>var __require = (id) => { if(id==="react") return React; if(id==="react-dom/client") return ReactDOM; return {}; };
-(() => {
+  <script>var{useState,useEffect,useMemo,useCallback,useRef}=React;</script>
+  <script>var __require=(id)=>{if(id==="react")return React;if(id==="react-dom/client")return ReactDOM;return{};};(() => {
   var __create = Object.create;
   var __defProp = Object.defineProperty;
   var __defProps = Object.defineProperties;
@@ -997,8 +994,8 @@
   ));
 
   // tmp/app.tsx
-  var import_react = { default: React, useState, useEffect, useMemo, useCallback, useRef };
-  var import_client = { default: ReactDOM };
+  var import_react={default:React,useState,useEffect,useMemo,useCallback,useRef};
+  var import_client={default:ReactDOM};
   var API = {
     base: "/api",
     async post(path, body) {
@@ -3468,112 +3465,117 @@
     } }, "Cancelar"), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: saveExpense }, "Registrar Despesa"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "section-head" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, color: "var(--text2)" } }, ccs.length, " cart\xE3o", ccs.length !== 1 ? "\xF5es" : ""), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: () => {
       setCardForm(blankCard);
       setCardModal("new");
-    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "plus", s: 14 }), "Novo Cart\xE3o")), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 20, alignItems: "flex-start" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: selectedCard ? "0 0 360px" : "1", display: "flex", flexDirection: "column", gap: 14, transition: "flex 0.3s" } }, ccs.map((cc) => {
+    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "plus", s: 14 }), "Novo Cart\xE3o")), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16, marginBottom: selectedCard ? 20 : 0 } }, ccs.map((cc) => {
       const stats = cardStats(cc);
       const nd = nextDates(cc);
       const isSelected = selectedCard === cc.id;
-      const usageColor = stats.usagePct > 85 ? "var(--red)" : stats.usagePct > 60 ? "var(--gold)" : "var(--green)";
       const closingAlert = nd.closingDays <= 5;
       const dueAlert = nd.dueDays <= 5;
-      return /* @__PURE__ */ import_react.default.createElement(
-        "div",
+      const barColor = stats.usagePct > 85 ? "#f87171" : stats.usagePct > 60 ? "#f0b429" : "#34d399";
+      return /* @__PURE__ */ import_react.default.createElement("div", { key: cc.id, style: {
+        borderRadius: 14,
+        overflow: "hidden",
+        cursor: "pointer",
+        border: `2px solid ${isSelected ? "var(--gold)" : "transparent"}`,
+        boxShadow: isSelected ? `0 0 0 4px rgba(240,180,41,0.15), 0 4px 24px rgba(0,0,0,0.3)` : "0 2px 12px rgba(0,0,0,0.2)",
+        transition: "all 0.2s"
+      }, onClick: () => setSelectedCard(isSelected ? null : cc.id) }, /* @__PURE__ */ import_react.default.createElement("div", { style: { background: `linear-gradient(135deg, ${cc.color} 0%, ${cc.color}99 100%)`, padding: "16px 18px 14px" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 14, fontWeight: 700, color: "#fff" } }, cc.name), /* @__PURE__ */ import_react.default.createElement(Ic, { n: "cards", s: 18, c: "rgba(255,255,255,0.5)" })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 10 } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 } }, "Fatura atual"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 800, color: "#fff", lineHeight: 1 } }, fmt2(stats.used))), /* @__PURE__ */ import_react.default.createElement("div", { style: { textAlign: "right" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 } }, "Dispon\xEDvel"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color: stats.avail < 0 ? "#f87171" : "rgba(255,255,255,0.9)" } }, fmt2(stats.avail)))), /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { height: 5, background: "rgba(255,255,255,0.15)", borderRadius: 99 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { height: "100%", width: `${Math.min(100, stats.usagePct)}%`, background: barColor, borderRadius: 99, transition: "width 0.6s ease" } })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9, color: "rgba(255,255,255,0.45)" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { color: barColor, fontWeight: 700 } }, stats.usagePct.toFixed(0), "% usado"), /* @__PURE__ */ import_react.default.createElement("span", null, "Limite ", fmt2(cc.limit_amount))))), /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--surface)", padding: "12px 18px 14px" }, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 12 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: {
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        background: closingAlert ? "rgba(248,113,113,0.08)" : "var(--surface2)",
+        border: `1px solid ${closingAlert ? "rgba(248,113,113,0.35)" : "var(--border)"}`,
+        borderRadius: 10,
+        padding: "8px 10px"
+      } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 7, height: 7, borderRadius: 99, background: closingAlert ? "#f87171" : "var(--text3)", flexShrink: 0 } }), /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 1 } }, "Fecha"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: closingAlert ? "#f87171" : "var(--text)", lineHeight: 1.2 } }, "em ", nd.closingDays, "d", /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 10, fontWeight: 400, color: "var(--text2)", display: "block" } }, fmtDate2(nd.closingDate))))), /* @__PURE__ */ import_react.default.createElement("div", { style: {
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        background: dueAlert ? "rgba(248,113,113,0.08)" : "var(--surface2)",
+        border: `1px solid ${dueAlert ? "rgba(248,113,113,0.35)" : "var(--border)"}`,
+        borderRadius: 10,
+        padding: "8px 10px"
+      } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 7, height: 7, borderRadius: 99, background: dueAlert ? "#f87171" : "#f0b429", flexShrink: 0 } }), /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 1 } }, "Vence"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: dueAlert ? "#f87171" : "var(--text)", lineHeight: 1.2 } }, "em ", nd.dueDays, "d", /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 10, fontWeight: 400, color: "var(--text2)", display: "block" } }, fmtDate2(nd.dueDate)))))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ import_react.default.createElement(
+        "button",
         {
-          key: cc.id,
-          onClick: () => setSelectedCard(isSelected ? null : cc.id),
-          style: {
-            borderRadius: 16,
-            overflow: "hidden",
-            cursor: "pointer",
-            border: `2px solid ${isSelected ? "var(--gold)" : "var(--border)"}`,
-            transition: "border-color 0.2s, box-shadow 0.2s",
-            boxShadow: isSelected ? "0 0 0 3px var(--gold-dim)" : "none",
-            background: "var(--surface)"
-          }
-        },
-        /* @__PURE__ */ import_react.default.createElement("div", { style: { background: `linear-gradient(135deg, ${cc.color} 0%, ${cc.color}bb 100%)`, padding: "18px 20px" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 2 } }, cc.name), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 11, color: "rgba(255,255,255,0.5)" } }, "\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022")), /* @__PURE__ */ import_react.default.createElement(Ic, { n: "cards", s: 22, c: "rgba(255,255,255,0.6)" })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-end" } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 } }, "Fatura atual"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 26, fontWeight: 700, color: "#fff" } }, fmt2(stats.used))), /* @__PURE__ */ import_react.default.createElement("div", { style: { textAlign: "right" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 } }, "Dispon\xEDvel"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 600, color: stats.avail < 0 ? "#f87171" : "rgba(255,255,255,0.9)" } }, fmt2(stats.avail)))), /* @__PURE__ */ import_react.default.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { height: 4, background: "rgba(255,255,255,0.15)", borderRadius: 99 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { height: "100%", width: `${Math.min(100, stats.usagePct)}%`, background: stats.usagePct > 85 ? "#f87171" : "rgba(255,255,255,0.85)", borderRadius: 99, transition: "width 0.5s" } })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9, color: "rgba(255,255,255,0.5)" } }, /* @__PURE__ */ import_react.default.createElement("span", null, stats.usagePct.toFixed(0), "% usado"), /* @__PURE__ */ import_react.default.createElement("span", null, "Limite: ", fmt2(cc.limit_amount))))),
-        /* @__PURE__ */ import_react.default.createElement("div", { style: { padding: "14px 20px" }, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: {
-          display: "flex",
-          alignItems: "center",
-          gap: 5,
-          padding: "5px 10px",
-          borderRadius: 8,
-          background: closingAlert ? "rgba(248,113,113,0.1)" : "var(--surface2)",
-          border: `1px solid ${closingAlert ? "rgba(248,113,113,0.3)" : "var(--border)"}`
-        } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 6, height: 6, borderRadius: 99, background: closingAlert ? "var(--red)" : "var(--text3)" } }), /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em" } }, "Fecha"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, fontWeight: 600, color: closingAlert ? "var(--red)" : "var(--text)", fontFamily: "var(--font-mono)" } }, nd.closingDays, "d \xB7 ", fmtDate2(nd.closingDate)))), /* @__PURE__ */ import_react.default.createElement("div", { style: {
-          display: "flex",
-          alignItems: "center",
-          gap: 5,
-          padding: "5px 10px",
-          borderRadius: 8,
-          background: dueAlert ? "rgba(248,113,113,0.1)" : "var(--surface2)",
-          border: `1px solid ${dueAlert ? "rgba(248,113,113,0.3)" : "var(--border)"}`
-        } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 6, height: 6, borderRadius: 99, background: dueAlert ? "var(--red)" : "var(--gold)" } }), /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.06em" } }, "Vence"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, fontWeight: 600, color: dueAlert ? "var(--red)" : "var(--text)", fontFamily: "var(--font-mono)" } }, nd.dueDays, "d \xB7 ", fmtDate2(nd.dueDate))))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ import_react.default.createElement(
-          Btn,
-          {
-            onClick: () => {
-              setExpForm(blankExp);
-              setExpenseModal({ cc });
-            },
-            style: { flex: 1, background: `${cc.color}22`, color: "#fff", border: `1px solid ${cc.color}55`, padding: "7px 0", fontSize: 12, borderRadius: 8, justifyContent: "center" }
+          onClick: () => {
+            setExpForm(blankExp);
+            setExpenseModal({ cc });
           },
-          /* @__PURE__ */ import_react.default.createElement(Ic, { n: "plus", s: 13 }),
-          "Nova Despesa"
-        ), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", size: "sm btn-icon", onClick: () => {
-          setCardForm(__spreadValues({}, cc));
-          setCardModal("edit");
-        } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "edit", s: 13 })), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger", size: "sm btn-icon", onClick: () => setConfirm(cc) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "trash", s: 13 }))))
-      );
+          style: {
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            padding: "9px 12px",
+            borderRadius: 9,
+            border: "none",
+            cursor: "pointer",
+            background: cc.color,
+            color: "#fff",
+            fontSize: 12,
+            fontWeight: 700,
+            boxShadow: `0 2px 10px ${cc.color}55`,
+            transition: "opacity 0.15s"
+          },
+          onMouseEnter: (e) => e.currentTarget.style.opacity = "0.85",
+          onMouseLeave: (e) => e.currentTarget.style.opacity = "1"
+        },
+        /* @__PURE__ */ import_react.default.createElement(Ic, { n: "plus", s: 14, c: "#fff" }),
+        "Nova Despesa"
+      ), /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => {
+        setCardForm(__spreadValues({}, cc));
+        setCardModal("edit");
+      }, style: { padding: "9px 11px", borderRadius: 9, border: "1px solid var(--border)", background: "var(--surface2)", color: "var(--text2)", cursor: "pointer", display: "flex" } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "edit", s: 14 })), /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => setConfirm(cc), style: { padding: "9px 11px", borderRadius: 9, border: "1px solid rgba(248,113,113,0.3)", background: "rgba(248,113,113,0.08)", color: "#f87171", cursor: "pointer", display: "flex" } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "trash", s: 14 })))));
     })), activeCard && (() => {
       const stats = cardStats(activeCard);
-      const nd = nextDates(activeCard);
-      const billGroups = activeBills.sort((a, b) => b.closing_date.localeCompare(a.closing_date)).map((bill) => ({
-        bill,
-        txs: activeTxs.filter((t) => t.bill_id === bill.id)
-      })).filter((g) => g.txs.length > 0 || g.bill.total_amount > 0);
-      const unbilledTxs = activeTxs.filter((t) => !t.bill_id);
       const STATUS_CFG2 = {
         open: { label: "Aberta", color: "var(--blue)" },
         closed: { label: "Fechada", color: "var(--gold)" },
         paid: { label: "Paga", color: "var(--green)" }
       };
-      return /* @__PURE__ */ import_react.default.createElement("div", { className: "card fade-up", style: { flex: 1, minWidth: 0, position: "sticky", top: 20 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 12, height: 12, borderRadius: 99, background: activeCard.color } }), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontWeight: 700, fontSize: 15 } }, activeCard.name)), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", size: "sm", onClick: () => setSelectedCard(null) }, "\xD7 Fechar")), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 20 } }, [
+      const billGroups = activeBills.sort((a, b) => b.closing_date.localeCompare(a.closing_date)).map((bill) => ({ bill, txs: activeTxs.filter((t) => t.bill_id === bill.id) })).filter((g) => g.txs.length > 0 || g.bill.total_amount > 0);
+      const unbilledTxs = activeTxs.filter((t) => !t.bill_id);
+      return /* @__PURE__ */ import_react.default.createElement("div", { className: "card fade-up", style: { marginTop: 4 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 10, height: 10, borderRadius: 99, background: activeCard.color } }), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontWeight: 700, fontSize: 15 } }, activeCard.name, " \u2014 Extratos")), /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => setSelectedCard(null), style: { background: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text2)", padding: "5px 12px", borderRadius: 8, cursor: "pointer", fontSize: 12 } }, "\xD7 Fechar")), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 16 } }, [
         { label: "Fatura Aberta", value: fmt2(stats.used), color: "var(--text)" },
         { label: "Dispon\xEDvel", value: fmt2(stats.avail), color: stats.avail < 0 ? "var(--red)" : "var(--green)" },
         { label: "Limite Total", value: fmt2(activeCard.limit_amount), color: "var(--text2)" }
-      ].map(({ label, value, color }) => /* @__PURE__ */ import_react.default.createElement("div", { key: label, style: { background: "var(--surface2)", borderRadius: 10, padding: "12px 14px" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5 } }, label), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color } }, value)))), /* @__PURE__ */ import_react.default.createElement("div", { style: { marginBottom: 20 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontWeight: 700 } }, "Ciclos de Fatura"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 8, overflowX: "auto", paddingBottom: 6 } }, getUpcomingCycles(activeCard).map((cycle, i) => {
+      ].map(({ label, value, color }) => /* @__PURE__ */ import_react.default.createElement("div", { key: label, style: { background: "var(--surface2)", borderRadius: 10, padding: "11px 14px" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 } }, label), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 15, fontWeight: 700, color } }, value)))), /* @__PURE__ */ import_react.default.createElement("div", { style: { marginBottom: 16 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, fontWeight: 700 } }, "Ciclos de Fatura"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 } }, getUpcomingCycles(activeCard).map((cycle, i) => {
         const bill = activeBills.find((b) => b.closing_date === cycle.closing_date);
         const todayStr = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
         const isPast = cycle.closing_date < todayStr;
         const isCurrent = !isPast && i <= 1;
-        const status = (bill == null ? void 0 : bill.status) || "open";
-        const cfg = STATUS_CFG2[status];
+        const cfg = STATUS_CFG2[(bill == null ? void 0 : bill.status) || "open"];
         return /* @__PURE__ */ import_react.default.createElement("div", { key: cycle.key, style: {
-          minWidth: 150,
+          minWidth: 145,
           padding: "10px 12px",
           borderRadius: 10,
           flexShrink: 0,
           border: `1px solid ${isCurrent ? "var(--gold)" : "var(--border)"}`,
-          background: isCurrent ? "var(--gold-dim)" : isPast ? "var(--surface2)" : "var(--surface)",
+          background: isCurrent ? "var(--gold-dim)" : "var(--surface2)",
           opacity: isPast && !bill ? 0.5 : 1
-        } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: isCurrent ? "var(--gold)" : "var(--text3)", textTransform: "uppercase", marginBottom: 6 } }, isCurrent ? "\u25CF Atual" : isPast ? "Passado" : "Pr\xF3ximo"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)" } }, "Fecha"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 12, fontWeight: 600, marginBottom: 4 } }, fmtDate2(cycle.closing_date)), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)" } }, "Vence"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 12, marginBottom: 8 } }, fmtDate2(cycle.due_date)), bill ? /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700 } }, fmt2(bill.total_amount)), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 9, fontWeight: 700, color: cfg.color, background: `${cfg.color}22`, padding: "2px 7px", borderRadius: 99 } }, cfg.label)) : /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text3)" } }, "Sem lan\xE7amentos"));
-      }))), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12, fontWeight: 700 } }, "Despesas por Fatura"), activeTxs.length === 0 ? /* @__PURE__ */ import_react.default.createElement("div", { style: { color: "var(--text3)", fontSize: 13, padding: "16px 0", textAlign: "center" } }, "Nenhuma despesa registrada neste cart\xE3o.") : /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, billGroups.map(({ bill, txs: bTxs }) => {
+        } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: isCurrent ? "var(--gold)" : "var(--text3)", textTransform: "uppercase", marginBottom: 6 } }, isCurrent ? "\u25CF Atual" : isPast ? "Passado" : "Pr\xF3ximo"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)" } }, "Fecha \xB7 ", /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", color: "var(--text)" } }, fmtDate2(cycle.closing_date))), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)", marginTop: 2, marginBottom: 8 } }, "Vence \xB7 ", /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", color: "var(--text)" } }, fmtDate2(cycle.due_date))), bill ? /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700 } }, fmt2(bill.total_amount)), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 9, fontWeight: 700, color: cfg.color, background: `${cfg.color}22`, padding: "2px 7px", borderRadius: 99 } }, cfg.label)) : /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text3)" } }, "Sem lan\xE7amentos"));
+      }))), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10, fontWeight: 700 } }, "Despesas por Fatura"), activeTxs.length === 0 ? /* @__PURE__ */ import_react.default.createElement("div", { style: { color: "var(--text3)", fontSize: 13, padding: "16px 0", textAlign: "center" } }, "Nenhuma despesa registrada.") : /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } }, billGroups.map(({ bill, txs: bTxs }) => {
         const cfg = STATUS_CFG2[bill.status];
-        return /* @__PURE__ */ import_react.default.createElement("div", { key: bill.id }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "var(--surface2)", borderRadius: "8px 8px 0 0", borderBottom: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 10, alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 9, fontWeight: 700, color: cfg.color, background: `${cfg.color}22`, padding: "2px 8px", borderRadius: 99 } }, cfg.label), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 11, color: "var(--text2)" } }, "Fecha ", fmtDate2(bill.closing_date))), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700 } }, fmt2(bill.total_amount))), /* @__PURE__ */ import_react.default.createElement("div", { style: { border: "1px solid var(--border)", borderTop: "none", borderRadius: "0 0 8px 8px", overflow: "hidden" } }, bTxs.map((t, idx) => {
+        return /* @__PURE__ */ import_react.default.createElement("div", { key: bill.id, style: { borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 14px", background: "var(--surface2)", borderBottom: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 9, fontWeight: 700, color: cfg.color, background: `${cfg.color}22`, padding: "2px 8px", borderRadius: 99 } }, cfg.label), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 11, color: "var(--text2)" } }, "Fecha ", fmtDate2(bill.closing_date))), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700 } }, fmt2(bill.total_amount))), bTxs.map((t, idx) => {
           const cat = cats.find((c) => c.id === t.category_id);
           return /* @__PURE__ */ import_react.default.createElement("div", { key: t.id, style: {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            padding: "9px 12px",
-            borderBottom: idx < bTxs.length - 1 ? "1px solid var(--border)" : "none",
-            background: idx % 2 === 0 ? "var(--surface)" : "var(--surface2)"
-          } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, t.description), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 8, marginTop: 2, alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 10, color: "var(--text3)", fontFamily: "var(--font-mono)" } }, fmtDate2(t.date)), cat && /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 10, background: "var(--surface2)", border: "1px solid var(--border)", borderRadius: 5, padding: "1px 6px", color: "var(--text2)" } }, cat.name))), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600, color: "var(--red)", marginLeft: 12, flexShrink: 0 } }, "\u2212", fmt2(t.amount)));
-        })));
-      }), unbilledTxs.length > 0 && /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "var(--surface2)", borderRadius: "8px 8px 0 0", borderBottom: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 11, color: "var(--text2)" } }, "Sem fatura vinculada"), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700 } }, fmt2(unbilledTxs.reduce((s, t) => s + t.amount, 0)))), /* @__PURE__ */ import_react.default.createElement("div", { style: { border: "1px solid var(--border)", borderTop: "none", borderRadius: "0 0 8px 8px" } }, unbilledTxs.map((t, idx) => {
+            padding: "9px 14px",
+            background: idx % 2 === 0 ? "var(--surface)" : "var(--surface2)",
+            borderBottom: idx < bTxs.length - 1 ? "1px solid var(--border)" : "none"
+          } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, t.description), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 8, marginTop: 2, alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 10, color: "var(--text3)", fontFamily: "var(--font-mono)" } }, fmtDate2(t.date)), cat && /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 10, background: "var(--surface2)", border: "1px solid var(--border)", borderRadius: 5, padding: "1px 6px", color: "var(--text2)" } }, cat.name))), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600, color: "#f87171", marginLeft: 12, flexShrink: 0 } }, "\u2212", fmt2(t.amount)));
+        }));
+      }), unbilledTxs.length > 0 && /* @__PURE__ */ import_react.default.createElement("div", { style: { borderRadius: 10, overflow: "hidden", border: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", padding: "8px 14px", background: "var(--surface2)", borderBottom: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 11, color: "var(--text2)" } }, "Sem fatura vinculada"), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700 } }, fmt2(unbilledTxs.reduce((s, t) => s + t.amount, 0)))), unbilledTxs.map((t, idx) => {
         const cat = cats.find((c) => c.id === t.category_id);
-        return /* @__PURE__ */ import_react.default.createElement("div", { key: t.id, style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 12px", borderBottom: idx < unbilledTxs.length - 1 ? "1px solid var(--border)" : "none" } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, fontWeight: 500 } }, t.description), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text3)" } }, fmtDate2(t.date), cat ? " \xB7 " + cat.name : "")), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600, color: "var(--red)" } }, "\u2212", fmt2(t.amount)));
-      })))));
-    })()));
+        return /* @__PURE__ */ import_react.default.createElement("div", { key: t.id, style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 14px", borderBottom: idx < unbilledTxs.length - 1 ? "1px solid var(--border)" : "none" } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, fontWeight: 500 } }, t.description), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text3)" } }, fmtDate2(t.date), cat ? " \xB7 " + cat.name : "")), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 600, color: "#f87171" } }, "\u2212", fmt2(t.amount)));
+      }))));
+    })());
   }
   function BillsPage({ bills, setBills, ccs, txs, setTxs, accs, cats, computeBalance, fmt: fmt2, fmtDate: fmtDate2 }) {
     const [payModal, setPayModal] = (0, import_react.useState)(null);
