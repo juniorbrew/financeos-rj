@@ -20,12 +20,10 @@ async function supabase(path, options = {}) {
   return { data, status: res.status, ok: res.ok };
 }
 
-// Hash simples de senha (SHA-256 via crypto)
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + "financeos_salt_2024");
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+// Hash de senha usando Node.js crypto nativo
+function hashPassword(password) {
+  const crypto = require("crypto");
+  return crypto.createHash("sha256").update(password + "financeos_salt_2024").digest("hex");
 }
 
 function cors(headers = {}) {
