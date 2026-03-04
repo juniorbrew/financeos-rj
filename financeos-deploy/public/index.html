@@ -2769,14 +2769,18 @@
     const [bgs, setBgs] = (0, import_react.useState)(ud.bgs);
     const [goals, setGoals] = (0, import_react.useState)(ud.goals);
     const [users, setUsers] = (0, import_react.useState)([__spreadProps(__spreadValues({}, ME_ACTIVE), { active: true })]);
+    const saveTimerRef = (0, import_react.useRef)(null);
+    const saveToCloud = (0, import_react.useCallback)((data) => {
+      if (!authUser2.id || authUser2.id === "00000000-0000-0000-0000-000000000001") return;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        API.saveData(authUser2.id, data).catch((e) => console.warn("Save falhou:", e));
+      }, 3e4);
+    }, [authUser2.id]);
     (0, import_react.useEffect)(() => {
-      authUser2.data = { accs, cats, ccs, bills, txs, bgs, goals };
-      const timer = setTimeout(() => {
-        if (authUser2.id && authUser2.id !== "00000000-0000-0000-0000-000000000001") {
-          API.saveData(authUser2.id, { accs, cats, ccs, bills, txs, bgs, goals }).catch((e) => console.warn("Auto-save falhou:", e));
-        }
-      }, 2e3);
-      return () => clearTimeout(timer);
+      const data = { accs, cats, ccs, bills, txs, bgs, goals };
+      authUser2.data = data;
+      saveToCloud(data);
     }, [accs, cats, ccs, bills, txs, bgs, goals]);
     const computeBalance = (0, import_react.useCallback)((accId) => {
       const acc = accs.find((a) => a.id === accId);
