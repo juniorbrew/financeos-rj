@@ -3074,16 +3074,22 @@
         placeholder: "Nome da categoria...",
         maxLength: 40
       }
-    ), /* @__PURE__ */ import_react.default.createElement(
-      "button",
-      {
-        type: "button",
-        className: "cat-inline-save",
-        onClick: handleAdd,
-        disabled: !name.trim()
-      },
-      "Criar"
-    ), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "cat-inline-cancel", onClick: () => {
+    ), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "cat-inline-save", onClick: () => {
+      var _a, _b;
+      const val = ((_b = (_a = inputRef.current) == null ? void 0 : _a.value) == null ? void 0 : _b.trim()) || name.trim();
+      if (!val) return;
+      const newCat = {
+        id: uid(),
+        tenant_id: TID,
+        name: val,
+        type,
+        color: type === "income" ? "green" : "red",
+        icon: type === "income" ? "arrow_up" : "arrow_down"
+      };
+      onAdd(newCat);
+      setName("");
+      setOpen(false);
+    } }, "Criar"), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "cat-inline-cancel", onClick: () => {
       setOpen(false);
       setName("");
     } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 14 }))));
