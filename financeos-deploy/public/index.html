@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark"><!-- build:20260304-123316 -->
+<html lang="pt-BR" data-theme="dark"><!-- build:20260304-124426 -->
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
@@ -1025,6 +1025,15 @@
     },
     async checkPlan(userId) {
       return API.get(`/check-plan?userId=${userId}`);
+    },
+    async requestReset(email) {
+      return API.post("/reset-password", { action: "request", email });
+    },
+    async verifyResetToken(token) {
+      return API.post("/reset-password", { action: "verify", token });
+    },
+    async confirmReset(token, newPassword) {
+      return API.post("/reset-password", { action: "confirm", token, newPassword });
     }
   };
   var CSS = `
@@ -2840,13 +2849,72 @@
   function AuthScreen({ onLogin, initialMode = "login", onBack, pendingPlan = null }) {
     const [mode, setMode] = (0, import_react.useState)(initialMode);
     const [form, setForm] = (0, import_react.useState)({ name: "", email: "", password: "", confirm: "", tenant: "" });
+    const [resetToken, setResetToken] = (0, import_react.useState)("");
+    const [resetName, setResetName] = (0, import_react.useState)("");
+    const [newPass, setNewPass] = (0, import_react.useState)("");
+    const [newPass2, setNewPass2] = (0, import_react.useState)("");
     const [error, setError] = (0, import_react.useState)("");
     const [success, setSuccess] = (0, import_react.useState)("");
     const [loading, setLoading] = (0, import_react.useState)(false);
     const [showPass, setShowPass] = (0, import_react.useState)(false);
+    (0, import_react.useEffect)(() => {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("reset");
+      if (token) {
+        setResetToken(token);
+        setMode("reset");
+        API.verifyResetToken(token).then((res) => {
+          if (!res.valid) {
+            setError("Link expirado ou inv\xE1lido. Solicite um novo.");
+            setMode("forgot");
+          } else setResetName(res.name || "");
+        });
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }, []);
     const set = (k, v) => {
       setForm((f) => __spreadProps(__spreadValues({}, f), { [k]: v }));
       setError("");
+    };
+    const handleForgotPassword = async () => {
+      if (!form.email.trim()) {
+        setError("Informe seu email.");
+        return;
+      }
+      setLoading(true);
+      setError("");
+      try {
+        await API.requestReset(form.email.trim());
+        setSuccess(`Email enviado para ${form.email.trim()}! Verifique sua caixa de entrada (e o spam).`);
+      } catch (e) {
+        setError("Erro de conex\xE3o. Tente novamente.");
+      }
+      setLoading(false);
+    };
+    const handleConfirmReset = async () => {
+      if (newPass.length < 6) {
+        setError("Senha deve ter pelo menos 6 caracteres.");
+        return;
+      }
+      if (newPass !== newPass2) {
+        setError("As senhas n\xE3o coincidem.");
+        return;
+      }
+      setLoading(true);
+      setError("");
+      try {
+        const res = await API.confirmReset(resetToken, newPass);
+        if (res.error) {
+          setError(res.error);
+          setLoading(false);
+          return;
+        }
+        setSuccess("Senha alterada com sucesso! Redirecionando...");
+        setTimeout(() => setMode("login"), 1800);
+      } catch (e) {
+        setError("Erro de conex\xE3o. Tente novamente.");
+      }
+      setLoading(false);
     };
     const handleLogin = async () => {
       if (!form.email.trim() || !form.password) {
@@ -2952,12 +3020,69 @@
         onKeyDown: (e) => e.key === "Enter" && handleLogin(),
         style: { paddingRight: 40 }
       }
-    ), /* @__PURE__ */ import_react.default.createElement("button", { className: "auth-password-toggle", onClick: () => setShowPass((s) => !s), type: "button" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: showPass ? "close" : "filter", s: 14 }))), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-hint", style: { marginBottom: 4 } }, "Conta demo: ", /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--gold)" } }, "demo@financeos.app"), " / ", /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--gold)" } }, "demo123")), /* @__PURE__ */ import_react.default.createElement("button", { className: "auth-btn", style: { marginTop: 16 }, onClick: handleLogin, disabled: loading }, loading ? "Entrando..." : /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "check", s: 16 }), "Entrar")), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-divider" }, "ou"), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-switch" }, "N\xE3o tem conta?", " ", /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => {
+    ), /* @__PURE__ */ import_react.default.createElement("button", { className: "auth-password-toggle", onClick: () => setShowPass((s) => !s), type: "button" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: showPass ? "close" : "filter", s: 14 }))), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-hint", style: { marginBottom: 4 } }, "Conta demo: ", /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--gold)" } }, "demo@financeos.app"), " / ", /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--gold)" } }, "demo123")), /* @__PURE__ */ import_react.default.createElement("button", { className: "auth-btn", style: { marginTop: 16 }, onClick: handleLogin, disabled: loading }, loading ? "Entrando..." : /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "check", s: 16 }), "Entrar")), /* @__PURE__ */ import_react.default.createElement("div", { style: { textAlign: "center", marginTop: 12 } }, /* @__PURE__ */ import_react.default.createElement(
+      "button",
+      {
+        onClick: () => {
+          setMode("forgot");
+          setError("");
+          setSuccess("");
+        },
+        style: { background: "none", border: "none", color: "var(--text2)", cursor: "pointer", fontSize: 13, fontFamily: "inherit", textDecoration: "underline" }
+      },
+      "Esqueceu a senha?"
+    )), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-divider" }, "ou"), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-switch" }, "N\xE3o tem conta?", " ", /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => {
       setMode("register");
       setError("");
       setSuccess("");
       setForm({ name: "", email: "", password: "", confirm: "", tenant: "" });
-    } }, "Criar conta gr\xE1tis"))) : /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-title" }, "Criar sua conta"), pendingPlan ? /* @__PURE__ */ import_react.default.createElement("div", { style: {
+    } }, "Criar conta gr\xE1tis"))) : mode === "forgot" ? /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-title" }, "Recuperar senha"), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-sub" }, "Informe seu email e enviaremos um link para criar uma nova senha."), error && /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-error" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "alert", s: 14 }), error), success && /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-success" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "check", s: 14 }), success), !success && /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-input-wrap" }, /* @__PURE__ */ import_react.default.createElement("label", null, "Email"), /* @__PURE__ */ import_react.default.createElement("span", { className: "auth-input-icon" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "users", s: 15 })), /* @__PURE__ */ import_react.default.createElement(
+      "input",
+      {
+        type: "email",
+        placeholder: "seu@email.com",
+        value: form.email,
+        onChange: (e) => set("email", e.target.value),
+        onKeyDown: (e) => e.key === "Enter" && handleForgotPassword()
+      }
+    )), /* @__PURE__ */ import_react.default.createElement("button", { className: "auth-btn", style: { marginTop: 16 }, onClick: handleForgotPassword, disabled: loading }, loading ? "Enviando..." : /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "check", s: 16 }), "Enviar link de recupera\xE7\xE3o"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-switch", style: { marginTop: 16 } }, /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => {
+      setMode("login");
+      setError("");
+      setSuccess("");
+    } }, "\u2190 Voltar ao login"))) : mode === "reset" ? /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-title" }, "Nova senha"), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-sub" }, resetName ? `Ol\xE1, ${resetName}! ` : "", "Escolha uma nova senha para sua conta."), error && /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-error" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "alert", s: 14 }), error), success && /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-success" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "check", s: 14 }), success), !success && /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-input-wrap" }, /* @__PURE__ */ import_react.default.createElement("label", null, "Nova Senha"), /* @__PURE__ */ import_react.default.createElement("span", { className: "auth-input-icon" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "settings", s: 15 })), /* @__PURE__ */ import_react.default.createElement(
+      "input",
+      {
+        type: showPass ? "text" : "password",
+        placeholder: "M\xEDnimo 6 caracteres",
+        value: newPass,
+        onChange: (e) => {
+          setNewPass(e.target.value);
+          setError("");
+        },
+        style: { paddingRight: 40 }
+      }
+    ), /* @__PURE__ */ import_react.default.createElement("button", { className: "auth-password-toggle", onClick: () => setShowPass((s) => !s), type: "button" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: showPass ? "close" : "filter", s: 14 }))), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-input-wrap" }, /* @__PURE__ */ import_react.default.createElement("label", null, "Confirmar Nova Senha"), /* @__PURE__ */ import_react.default.createElement("span", { className: "auth-input-icon" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "settings", s: 15 })), /* @__PURE__ */ import_react.default.createElement(
+      "input",
+      {
+        type: showPass ? "text" : "password",
+        placeholder: "Repita a senha",
+        value: newPass2,
+        onChange: (e) => {
+          setNewPass2(e.target.value);
+          setError("");
+        },
+        onKeyDown: (e) => e.key === "Enter" && handleConfirmReset()
+      }
+    )), newPass.length > 0 && /* @__PURE__ */ import_react.default.createElement("div", { style: { marginBottom: 12 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 4, marginBottom: 4 } }, [1, 2, 3, 4].map((i) => /* @__PURE__ */ import_react.default.createElement("div", { key: i, style: {
+      flex: 1,
+      height: 3,
+      borderRadius: 99,
+      background: newPass.length >= i * 2 ? newPass.length >= 8 ? "var(--green)" : "var(--gold)" : "var(--border2)"
+    } }))), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text3)" } }, newPass.length < 4 ? "Muito fraca" : newPass.length < 6 ? "Fraca" : newPass.length < 8 ? "Razo\xE1vel" : "Forte \u2713")), /* @__PURE__ */ import_react.default.createElement("button", { className: "auth-btn", style: { marginTop: 8 }, onClick: handleConfirmReset, disabled: loading }, loading ? "Salvando..." : /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "check", s: 16 }), "Salvar Nova Senha"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-switch", style: { marginTop: 16 } }, /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => {
+      setMode("login");
+      setError("");
+      setSuccess("");
+    } }, "\u2190 Voltar ao login"))) : /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-title" }, "Criar sua conta"), pendingPlan ? /* @__PURE__ */ import_react.default.createElement("div", { style: {
       background: "#f0b42918",
       border: "1.5px solid #f0b42940",
       borderRadius: 10,
