@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark"><!-- build:20260304-120506 -->
+<html lang="pt-BR" data-theme="dark"><!-- build:20260304-121558 -->
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
@@ -4362,7 +4362,151 @@
     })))));
   }
   function SettingsPage({ tenant, user }) {
-    return /* @__PURE__ */ import_react.default.createElement("div", { style: { maxWidth: 560, width: "100%", display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title" }, "Empresa / Tenant"), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nome" }, /* @__PURE__ */ import_react.default.createElement("input", { defaultValue: tenant.name })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Plano" }, /* @__PURE__ */ import_react.default.createElement("select", { defaultValue: tenant.plan }, /* @__PURE__ */ import_react.default.createElement("option", { value: "free" }, "Free"), /* @__PURE__ */ import_react.default.createElement("option", { value: "pro" }, "Pro"), /* @__PURE__ */ import_react.default.createElement("option", { value: "premium" }, "Premium"))), /* @__PURE__ */ import_react.default.createElement(Btn, null, "Salvar")), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title" }, "Meu Perfil"), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nome" }, /* @__PURE__ */ import_react.default.createElement("input", { defaultValue: user.name })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "E-mail" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "email", defaultValue: user.email })), /* @__PURE__ */ import_react.default.createElement(Btn, null, "Atualizar")), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title" }, "Seguran\xE7a"), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Senha Atual" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nova Senha" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Confirmar Nova Senha" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 8 } }, /* @__PURE__ */ import_react.default.createElement(Btn, null, "Alterar Senha"), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 14 }), "Encerrar Sess\xE3o"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title" }, "Informa\xE7\xF5es do Sistema"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, [["Vers\xE3o", "2.0.0"], ["Tenant ID", TID], ["Plano", tenant.plan], ["Usu\xE1rio", user.email]].map(([k, v]) => /* @__PURE__ */ import_react.default.createElement("div", { key: k, style: { display: "flex", justifyContent: "space-between", fontSize: 13 } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { color: "var(--text2)" } }, k), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 12 } }, v))))));
+    const [tab, setTab] = (0, import_react.useState)("preferencias");
+    const [saved, setSaved] = (0, import_react.useState)(false);
+    const [currency, setCurrency] = (0, import_react.useState)("BRL");
+    const [language, setLanguage] = (0, import_react.useState)("pt-BR");
+    const [dateFormat, setDateFormat] = (0, import_react.useState)("dd/mm/yyyy");
+    const [startDay, setStartDay] = (0, import_react.useState)("1");
+    const [notifs, setNotifs] = (0, import_react.useState)({
+      email_geral: true,
+      novidades: true,
+      alertas_financeiros: true,
+      info_premium: true,
+      parcerias: false,
+      vencimento_fatura: true,
+      limite_orcamento: true,
+      saldo_baixo: true,
+      meta_atingida: true,
+      push_transacao: false
+    });
+    const toggleNotif = (k) => setNotifs((n) => __spreadProps(__spreadValues({}, n), { [k]: !n[k] }));
+    const [dashWidgets, setDashWidgets] = (0, import_react.useState)({
+      saldo_total: true,
+      fluxo_mensal: true,
+      orcamentos: true,
+      faturas: true,
+      metas: true,
+      graficos: true,
+      alertas: true,
+      proximas_contas: false
+    });
+    const toggleWidget = (k) => setDashWidgets((w) => __spreadProps(__spreadValues({}, w), { [k]: !w[k] }));
+    const showSaved = () => {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2e3);
+    };
+    const Toggle = ({ value, onChange }) => /* @__PURE__ */ import_react.default.createElement("button", { onClick: onChange, style: {
+      width: 46,
+      height: 26,
+      borderRadius: 99,
+      border: "none",
+      cursor: "pointer",
+      background: value ? "var(--gold)" : "var(--border2)",
+      position: "relative",
+      transition: "background 0.2s",
+      flexShrink: 0,
+      padding: 0
+    } }, /* @__PURE__ */ import_react.default.createElement("div", { style: {
+      width: 20,
+      height: 20,
+      borderRadius: 99,
+      background: "#fff",
+      position: "absolute",
+      top: 3,
+      left: value ? 23 : 3,
+      transition: "left 0.2s",
+      boxShadow: "0 1px 4px rgba(0,0,0,0.3)"
+    } }));
+    const NotifRow = ({ label, desc, k }) => /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "14px 0", borderBottom: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, paddingRight: 16 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 14, fontWeight: 600, color: "var(--text)" } }, label), desc && /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginTop: 3, lineHeight: 1.5 } }, desc)), /* @__PURE__ */ import_react.default.createElement(Toggle, { value: notifs[k], onChange: () => toggleNotif(k) }));
+    const WidgetRow = ({ label, desc, k }) => /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, paddingRight: 16 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 14, fontWeight: 600, color: "var(--text)" } }, label), desc && /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginTop: 2 } }, desc)), /* @__PURE__ */ import_react.default.createElement(Toggle, { value: dashWidgets[k], onChange: () => toggleWidget(k) }));
+    const TABS = [
+      { id: "preferencias", label: "Prefer\xEAncias" },
+      { id: "alertas", label: "Alertas e notifica\xE7\xF5es" },
+      { id: "dashboard", label: "Dashboard" },
+      { id: "seguranca", label: "Seguran\xE7a" }
+    ];
+    return /* @__PURE__ */ import_react.default.createElement("div", { style: { maxWidth: 860, width: "100%" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { marginBottom: 20 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "section-title", style: { marginBottom: 16 } }, "Configura\xE7\xF5es"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 4, background: "var(--surface2)", padding: 4, borderRadius: 12, flexWrap: "wrap" } }, TABS.map((t) => /* @__PURE__ */ import_react.default.createElement("button", { key: t.id, onClick: () => setTab(t.id), style: {
+      flex: 1,
+      minWidth: 120,
+      padding: "8px 14px",
+      borderRadius: 9,
+      border: "none",
+      cursor: "pointer",
+      background: tab === t.id ? "var(--gold)" : "transparent",
+      color: tab === t.id ? "#000" : "var(--text2)",
+      fontFamily: "inherit",
+      fontSize: 13,
+      fontWeight: tab === t.id ? 700 : 500,
+      transition: "all 0.15s",
+      whiteSpace: "nowrap"
+    } }, t.label)))), tab === "preferencias" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "Empresa"), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nome da Empresa" }, /* @__PURE__ */ import_react.default.createElement("input", { defaultValue: tenant.name })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } }, /* @__PURE__ */ import_react.default.createElement(Field, { label: "Plano" }, /* @__PURE__ */ import_react.default.createElement("select", { defaultValue: tenant.plan }, /* @__PURE__ */ import_react.default.createElement("option", { value: "free" }, "Free"), /* @__PURE__ */ import_react.default.createElement("option", { value: "pro" }, "Pro"), /* @__PURE__ */ import_react.default.createElement("option", { value: "premium" }, "Premium"))), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Moeda" }, /* @__PURE__ */ import_react.default.createElement("select", { value: currency, onChange: (e) => setCurrency(e.target.value) }, /* @__PURE__ */ import_react.default.createElement("option", { value: "BRL" }, "R$ \u2014 Real Brasileiro"), /* @__PURE__ */ import_react.default.createElement("option", { value: "USD" }, "$ \u2014 D\xF3lar Americano"), /* @__PURE__ */ import_react.default.createElement("option", { value: "EUR" }, "\u20AC \u2014 Euro")))), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: showSaved }, saved ? "\u2713 Salvo!" : "Salvar")), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "Meu Perfil"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } }, /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nome" }, /* @__PURE__ */ import_react.default.createElement("input", { defaultValue: user.name })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "E-mail" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "email", defaultValue: user.email }))), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: showSaved }, saved ? "\u2713 Salvo!" : "Atualizar Perfil")), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "Regional"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } }, /* @__PURE__ */ import_react.default.createElement(Field, { label: "Idioma" }, /* @__PURE__ */ import_react.default.createElement("select", { value: language, onChange: (e) => setLanguage(e.target.value) }, /* @__PURE__ */ import_react.default.createElement("option", { value: "pt-BR" }, "Portugu\xEAs (Brasil)"), /* @__PURE__ */ import_react.default.createElement("option", { value: "en-US" }, "English (US)"), /* @__PURE__ */ import_react.default.createElement("option", { value: "es" }, "Espa\xF1ol"))), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Formato de Data" }, /* @__PURE__ */ import_react.default.createElement("select", { value: dateFormat, onChange: (e) => setDateFormat(e.target.value) }, /* @__PURE__ */ import_react.default.createElement("option", { value: "dd/mm/yyyy" }, "dd/mm/aaaa"), /* @__PURE__ */ import_react.default.createElement("option", { value: "mm/dd/yyyy" }, "mm/dd/aaaa"), /* @__PURE__ */ import_react.default.createElement("option", { value: "yyyy-mm-dd" }, "aaaa-mm-dd"))), /* @__PURE__ */ import_react.default.createElement(Field, { label: "In\xEDcio do M\xEAs" }, /* @__PURE__ */ import_react.default.createElement("select", { value: startDay, onChange: (e) => setStartDay(e.target.value) }, [1, 5, 10, 15, 20, 25].map((d) => /* @__PURE__ */ import_react.default.createElement("option", { key: d, value: d }, "Dia ", d))))), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: showSaved }, saved ? "\u2713 Salvo!" : "Salvar")), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 12 } }, "Informa\xE7\xF5es do Sistema"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, [["Vers\xE3o", "2.1.0"], ["Tenant ID", TID], ["Plano", tenant.plan], ["Usu\xE1rio", user.email]].map(([k, v]) => /* @__PURE__ */ import_react.default.createElement("div", { key: k, style: { display: "flex", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { color: "var(--text2)" } }, k), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text)" } }, v)))))), tab === "alertas" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 2 } }, "E-mail"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)" } }, "Notifica\xE7\xF5es enviadas para ", user.email)), /* @__PURE__ */ import_react.default.createElement(Toggle, { value: notifs.email_geral, onChange: () => toggleNotif("email_geral") })), /* @__PURE__ */ import_react.default.createElement("div", { style: { marginTop: 12, opacity: notifs.email_geral ? 1 : 0.4, transition: "opacity 0.2s", pointerEvents: notifs.email_geral ? "auto" : "none" } }, /* @__PURE__ */ import_react.default.createElement(
+      NotifRow,
+      {
+        k: "novidades",
+        label: "Novidades do FinanceOS",
+        desc: "Novas funcionalidades e dicas para melhorar sua vida financeira."
+      }
+    ), /* @__PURE__ */ import_react.default.createElement(
+      NotifRow,
+      {
+        k: "alertas_financeiros",
+        label: "Alertas financeiros",
+        desc: "Lembretes sobre vencimentos, gastos, transfer\xEAncias e objetivos."
+      }
+    ), /* @__PURE__ */ import_react.default.createElement(
+      NotifRow,
+      {
+        k: "info_premium",
+        label: "Informa\xE7\xF5es sobre o plano",
+        desc: "Confirma\xE7\xE3o de pagamento, renova\xE7\xE3o e novidades dos planos."
+      }
+    ), /* @__PURE__ */ import_react.default.createElement(
+      NotifRow,
+      {
+        k: "parcerias",
+        label: "Parcerias e ofertas",
+        desc: "Cupons, produtos financeiros e condi\xE7\xF5es especiais."
+      }
+    ))), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 4 } }, "Alertas Financeiros"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Notifica\xE7\xF5es dentro do app sobre sua sa\xFAde financeira"), /* @__PURE__ */ import_react.default.createElement(
+      NotifRow,
+      {
+        k: "vencimento_fatura",
+        label: "Vencimento de fatura",
+        desc: "Aviso 3 dias antes do vencimento do cart\xE3o de cr\xE9dito."
+      }
+    ), /* @__PURE__ */ import_react.default.createElement(
+      NotifRow,
+      {
+        k: "limite_orcamento",
+        label: "Limite de or\xE7amento",
+        desc: "Alerta quando voc\xEA atingir 80% do limite de uma categoria."
+      }
+    ), /* @__PURE__ */ import_react.default.createElement(
+      NotifRow,
+      {
+        k: "saldo_baixo",
+        label: "Saldo baixo",
+        desc: "Aviso quando o saldo de uma conta ficar abaixo de R$ 100."
+      }
+    ), /* @__PURE__ */ import_react.default.createElement(
+      NotifRow,
+      {
+        k: "meta_atingida",
+        label: "Meta atingida",
+        desc: "Celebra\xE7\xE3o quando voc\xEA completar uma meta financeira."
+      }
+    ), /* @__PURE__ */ import_react.default.createElement("div", { style: { borderBottom: "none" } }, /* @__PURE__ */ import_react.default.createElement(
+      NotifRow,
+      {
+        k: "push_transacao",
+        label: "Nova transa\xE7\xE3o",
+        desc: "Notifica\xE7\xE3o a cada nova despesa ou receita registrada."
+      }
+    ))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: showSaved, style: { minWidth: 160 } }, saved ? "\u2713 Salvo!" : "Salvar Altera\xE7\xF5es"))), tab === "dashboard" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 4 } }, "Widgets do Dashboard"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Escolha quais cards aparecem na tela inicial"), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "saldo_total", label: "Saldo Total", desc: "Patrim\xF4nio l\xEDquido consolidado de todas as contas." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "fluxo_mensal", label: "Fluxo do M\xEAs", desc: "Gr\xE1fico de entradas e sa\xEDdas do m\xEAs atual." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "orcamentos", label: "Or\xE7amentos", desc: "Progresso de gastos por categoria." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "faturas", label: "Faturas de Cart\xE3o", desc: "Resumo das faturas abertas e pr\xF3ximas." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "metas", label: "Metas Financeiras", desc: "Progresso dos seus objetivos de economia." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "graficos", label: "Gr\xE1ficos", desc: "An\xE1lise visual de gastos por categoria." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "alertas", label: "Alertas", desc: "Painel de alertas financeiros importantes." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "proximas_contas", label: "Pr\xF3ximas Contas", desc: "Despesas recorrentes programadas." })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: showSaved, style: { minWidth: 160 } }, saved ? "\u2713 Salvo!" : "Salvar Altera\xE7\xF5es"))), tab === "seguranca" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "Alterar Senha"), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Senha Atual" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nova Senha" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Confirmar Nova Senha" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: showSaved }, saved ? "\u2713 Alterado!" : "Alterar Senha")), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 4 } }, "Sess\xF5es Ativas"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Dispositivos conectados \xE0 sua conta"), [
+      { device: "Chrome \u2014 Windows", local: "It\xE1, SC", time: "Agora", current: true },
+      { device: "Safari \u2014 iPhone", local: "It\xE1, SC", time: "H\xE1 2h" }
+    ].map((s, i) => /* @__PURE__ */ import_react.default.createElement("div", { key: i, style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 1 ? "1px solid var(--border)" : "none" } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, fontWeight: 600 } }, s.device, " ", s.current && /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 10, background: "var(--green-dim)", color: "var(--green)", padding: "2px 8px", borderRadius: 99, marginLeft: 6 } }, "Atual")), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text2)", marginTop: 2 } }, s.local, " \xB7 ", s.time)), !s.current && /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", size: "sm" }, "Encerrar")))), /* @__PURE__ */ import_react.default.createElement("div", { className: "card", style: { border: "1px solid var(--red-dim)" } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { color: "var(--red)", marginBottom: 4 } }, "Zona de Perigo"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Estas a\xE7\xF5es s\xE3o irrevers\xEDveis. Proceda com cuidado."), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" } }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 14 }), "Encerrar Todas as Sess\xF5es"), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", style: { borderColor: "var(--red)", color: "var(--red)" } }, "Excluir Conta")))));
   }
   var root = import_client.default.createRoot(document.getElementById("root"));
   root.render(import_react.default.createElement(AppWithBoundary));
