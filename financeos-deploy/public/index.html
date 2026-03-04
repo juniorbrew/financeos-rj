@@ -1409,19 +1409,17 @@
     table { min-width: 520px; }
     thead th, tbody td { padding: 8px 12px; font-size: 12px; }
 
-    /* Modais: bottom sheet */
-    .modal-bg { align-items: flex-end; padding: 0; }
+    /* Modais: bottom sheet \u2014 sobe do fundo, para ACIMA da bottom-nav */
+    .modal-bg { align-items: flex-end; padding: 0; padding-bottom: 72px; }
     .modal {
       border-radius: 20px 20px 0 0;
-      max-height: 92dvh;
+      max-height: calc(92dvh - 72px);
       border-left: none; border-right: none; border-bottom: none;
+      display: flex; flex-direction: column;
     }
-    .modal-header { padding: 14px 18px; }
-    .modal-bg { align-items: flex-end; padding: 0; }
-    .modal { border-radius: 20px 20px 0 0; max-height: 92dvh; border-bottom: none; }
-    .modal-header { padding: 16px 18px; }
+    .modal-header { padding: 14px 18px; flex-shrink: 0; }
     .modal-title { font-size: 17px; }
-    .modal-body { padding: 14px 18px 24px; }
+    .modal-body { padding: 14px 18px 16px; overflow-y: auto; flex: 1; }
 
     /* Formul\xE1rios: 1 coluna \u2014 inline styles e classes */
     [style*="grid-template-columns: 1fr 1fr"],
