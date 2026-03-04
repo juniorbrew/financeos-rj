@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark"><!-- build:20260304-124426 -->
+<html lang="pt-BR" data-theme="dark"><!-- build:20260304-173725 -->
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
@@ -3149,7 +3149,13 @@
   }
   function AppRouter() {
     const [authUser2, setAuthUser] = (0, import_react.useState)(null);
-    const [screen, setScreen] = (0, import_react.useState)("landing");
+    const [screen, setScreen] = (0, import_react.useState)(() => {
+      try {
+        if (new URLSearchParams(window.location.search).get("reset")) return "login";
+      } catch (e) {
+      }
+      return "landing";
+    });
     const [showPlans, setShowPlans] = (0, import_react.useState)(false);
     const [pendingPlan, setPendingPlan] = (0, import_react.useState)(null);
     useStripeReturn(authUser2, setAuthUser);
