@@ -2999,13 +2999,11 @@
     const [open, setOpen] = (0, import_react.useState)(false);
     const [name, setName] = (0, import_react.useState)("");
     const [type, setType] = (0, import_react.useState)(defaultType);
-    const inputRef = (0, import_react.useRef)(null);
     (0, import_react.useEffect)(() => {
       setType(defaultType);
     }, [defaultType]);
-    const handleAdd = () => {
-      var _a;
-      const trimmed = (((_a = inputRef.current) == null ? void 0 : _a.value) || name).trim();
+    function handleCreate() {
+      const trimmed = name.trim();
       if (!trimmed) return;
       const newCat = {
         id: uid(),
@@ -3018,20 +3016,7 @@
       onAdd(newCat);
       setName("");
       setOpen(false);
-    };
-    const handleKeyDown = (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleAdd();
-      }
-      if (e.key === "Escape") {
-        setOpen(false);
-        setName("");
-      }
-    };
-    (0, import_react.useEffect)(() => {
-      if (open && inputRef.current) inputRef.current.focus();
-    }, [open]);
+    }
     return /* @__PURE__ */ import_react.default.createElement("div", { style: { marginBottom: 12 } }, /* @__PURE__ */ import_react.default.createElement("label", { style: {
       display: "block",
       fontSize: 10,
@@ -3046,7 +3031,10 @@
         type: "button",
         className: "cat-add-btn",
         title: "Criar nova categoria",
-        onClick: () => setOpen((o) => !o)
+        onClick: () => {
+          setOpen((o) => !o);
+          setName("");
+        }
       },
       /* @__PURE__ */ import_react.default.createElement(Ic, { n: open ? "close" : "add", s: 16 })
     )), open && /* @__PURE__ */ import_react.default.createElement("div", { className: "cat-inline-form" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "cat-type-toggle" }, /* @__PURE__ */ import_react.default.createElement(
@@ -3068,18 +3056,20 @@
     )), /* @__PURE__ */ import_react.default.createElement(
       "input",
       {
-        ref: inputRef,
+        autoFocus: true,
         value: name,
         onChange: (e) => setName(e.target.value),
-        onKeyDown: handleKeyDown,
-        onInput: (e) => setName(e.target.value),
+        onKeyDown: (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleCreate();
+          }
+          if (e.key === "Escape") setOpen(false);
+        },
         placeholder: "Nome da categoria...",
         maxLength: 40
       }
-    ), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "cat-inline-save", onClick: handleAdd }, "Criar"), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "cat-inline-cancel", onClick: () => {
-      setOpen(false);
-      setName("");
-    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 14 }))));
+    ), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "cat-inline-save", onClick: handleCreate }, "Criar"), /* @__PURE__ */ import_react.default.createElement("button", { type: "button", className: "cat-inline-cancel", onClick: () => setOpen(false) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 14 }))));
   }
   function TransactionsPage({ accs, cats, ccs, bills, setBills, txs, setTxs, computeBalance, curr, fmt: fmt2, fmtDate: fmtDate2, fmtShort: fmtShort2, openNewOnMount, onNewTxOpened, isPro = true, onUpgrade: onUpgrade2 }) {
     var _a, _b, _c;
