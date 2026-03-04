@@ -56,7 +56,7 @@ async function sendResetEmail(email, token, name) {
       "Authorization": `Bearer ${RESEND_API_KEY}`,
     },
     body: JSON.stringify({
-      from: "FinanceOS <noreply@financeos-rj.netlify.app>",
+      from: "FinanceOS <onboarding@resend.dev>",
       to: [email],
       subject: "🔑 Redefinir senha — FinanceOS",
       html,
