@@ -2142,6 +2142,55 @@
     children
   );
   var Field = ({ label, children }) => /* @__PURE__ */ import_react.default.createElement("div", { className: "field" }, /* @__PURE__ */ import_react.default.createElement("label", null, label), children);
+  var CurrencyInput = ({ value, onChange, placeholder = "0,00", autoFocus, style }) => {
+    const toCents = (v) => Math.round((parseFloat(v) || 0) * 100);
+    const toDisplay = (c) => {
+      const n = Math.abs(c);
+      return `${Math.floor(n / 100).toLocaleString("pt-BR")},${String(n % 100).padStart(2, "0")}`;
+    };
+    const [cents, setCents] = import_react.default.useState(() => toCents(value));
+    import_react.default.useEffect(() => {
+      const nc = toCents(value);
+      if (nc !== cents) setCents(nc);
+    }, [value]);
+    const apply = (c) => {
+      const s = Math.min(c, 99999999);
+      setCents(s);
+      onChange((s / 100).toFixed(2));
+    };
+    const handleKey = (e) => {
+      if (e.key >= "0" && e.key <= "9") {
+        e.preventDefault();
+        apply(cents * 10 + parseInt(e.key));
+      } else if (e.key === "Backspace") {
+        e.preventDefault();
+        apply(Math.floor(cents / 10));
+      }
+    };
+    const handleInput = (e) => {
+      const raw = e.target.value.replace(/\D/g, "");
+      if (!raw) {
+        setCents(0);
+        onChange("");
+        return;
+      }
+      apply(parseInt(raw));
+    };
+    return /* @__PURE__ */ import_react.default.createElement(
+      "input",
+      {
+        type: "text",
+        inputMode: "numeric",
+        pattern: "[0-9]*",
+        value: cents === 0 ? "" : toDisplay(cents),
+        placeholder,
+        onKeyDown: handleKey,
+        onChange: handleInput,
+        autoFocus,
+        style
+      }
+    );
+  };
   var Progress = ({ value, max, color }) => {
     const p = pct(value, max);
     const c = p >= 100 ? "#f87171" : p >= 80 ? "#f0b429" : color || "#34d399";
