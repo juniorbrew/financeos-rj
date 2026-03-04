@@ -43,8 +43,8 @@ exports.handler = async (event) => {
       }
 
       // Cria usuário
-      const hash = await hashPassword(password);
-      const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+      const hash = hashPassword(password);
+      const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
       const { data: newUsers, ok } = await supabase("/users", {
         method: "POST",
@@ -111,7 +111,7 @@ exports.handler = async (event) => {
       if (user.id === "00000000-0000-0000-0000-000000000001") {
         passwordOk = password === "demo123";
       } else {
-        const hash = await hashPassword(password);
+        const hash = hashPassword(password);
         passwordOk = hash === user.password_hash;
       }
 

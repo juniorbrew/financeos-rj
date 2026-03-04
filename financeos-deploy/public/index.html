@@ -2398,7 +2398,7 @@
       color: "#22c55e",
       fontWeight: 600,
       letterSpacing: "0.04em"
-    } }, "\u2713 14 dias gr\xE1tis \u2014 sem cobran\xE7a imediata")), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "center", marginTop: 16 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "plans-toggle" }, /* @__PURE__ */ import_react.default.createElement(
+    } }, "\u2713 7 dias gr\xE1tis \u2014 sem cobran\xE7a imediata")), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "center", marginTop: 16 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "plans-toggle" }, /* @__PURE__ */ import_react.default.createElement(
       "button",
       {
         className: "plans-toggle-btn" + (billing === "monthly" ? " active" : ""),
@@ -2599,7 +2599,7 @@
       gap: 8,
       fontSize: 13,
       color: "var(--text)"
-    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 14, c: "var(--gold)" }), /* @__PURE__ */ import_react.default.createElement("span", null, /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--gold)" } }, pendingPlan === "pro_yearly" ? "Plano Anual \u2014 R$ 179,90/ano" : "Plano Mensal \u2014 R$ 19,90/m\xEAs"), " \xB7 ", "Crie sua conta para ativar os ", /* @__PURE__ */ import_react.default.createElement("strong", null, "14 dias gr\xE1tis"), " \u2713")) : /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-sub" }, "Comece a organizar suas finan\xE7as. Cada conta tem dados completamente isolados."), error && /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-error" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "alert", s: 14 }), error), success && /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-success" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "check", s: 14 }), success), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-features" }, features.map((f, i) => /* @__PURE__ */ import_react.default.createElement("div", { key: i, className: "auth-feature" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-feature-dot" }), f))), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-input-wrap" }, /* @__PURE__ */ import_react.default.createElement("label", null, "Seu nome completo"), /* @__PURE__ */ import_react.default.createElement("span", { className: "auth-input-icon" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "users", s: 15 })), /* @__PURE__ */ import_react.default.createElement(
+    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 14, c: "var(--gold)" }), /* @__PURE__ */ import_react.default.createElement("span", null, /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--gold)" } }, pendingPlan === "pro_yearly" ? "Plano Anual \u2014 R$ 179,90/ano" : "Plano Mensal \u2014 R$ 19,90/m\xEAs"), " \xB7 ", "Crie sua conta para ativar os ", /* @__PURE__ */ import_react.default.createElement("strong", null, "7 dias gr\xE1tis"), " \u2713")) : /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-sub" }, "Comece a organizar suas finan\xE7as. Cada conta tem dados completamente isolados."), error && /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-error" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "alert", s: 14 }), error), success && /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-success" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "check", s: 14 }), success), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-features" }, features.map((f, i) => /* @__PURE__ */ import_react.default.createElement("div", { key: i, className: "auth-feature" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-feature-dot" }), f))), /* @__PURE__ */ import_react.default.createElement("div", { className: "auth-input-wrap" }, /* @__PURE__ */ import_react.default.createElement("label", null, "Seu nome completo"), /* @__PURE__ */ import_react.default.createElement("span", { className: "auth-input-icon" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "users", s: 15 })), /* @__PURE__ */ import_react.default.createElement(
       "input",
       {
         type: "text",
@@ -2769,13 +2769,9 @@
     const [bgs, setBgs] = (0, import_react.useState)(ud.bgs);
     const [goals, setGoals] = (0, import_react.useState)(ud.goals);
     const [users, setUsers] = (0, import_react.useState)([__spreadProps(__spreadValues({}, ME_ACTIVE), { active: true })]);
-    const saveTimerRef = (0, import_react.useRef)(null);
     const saveToCloud = (0, import_react.useCallback)((data) => {
       if (!authUser2.id || authUser2.id === "00000000-0000-0000-0000-000000000001") return;
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => {
-        API.saveData(authUser2.id, data).catch((e) => console.warn("Save falhou:", e));
-      }, 3e4);
+      API.saveData(authUser2.id, data).catch((e) => console.warn("Save falhou:", e));
     }, [authUser2.id]);
     (0, import_react.useEffect)(() => {
       const data = { accs, cats, ccs, bills, txs, bgs, goals };
