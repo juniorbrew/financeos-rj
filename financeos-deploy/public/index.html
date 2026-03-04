@@ -3680,30 +3680,111 @@
   function GoalsPage({ goals, setGoals, fmt: fmt2, fmtDate: fmtDate2, isPro = true, onUpgrade: onUpgrade2 }) {
     const [modal, setModal] = (0, import_react.useState)(null);
     const [confirm, setConfirm] = (0, import_react.useState)(null);
+    const [selectedGoal, setSelectedGoal] = (0, import_react.useState)(null);
     const [form, setForm] = (0, import_react.useState)({ name: "", target_amount: "", current_amount: "", deadline: "" });
+    const [depositForm, setDepositForm] = (0, import_react.useState)({ amount: "", date: TODAY, notes: "" });
+    const [editDeposit, setEditDeposit] = (0, import_react.useState)(null);
     const f = (k, v) => setForm((p) => __spreadProps(__spreadValues({}, p), { [k]: v }));
+    const df = (k, v) => setDepositForm((p) => __spreadProps(__spreadValues({}, p), { [k]: v }));
     const save = () => {
       if (!form.name || !form.target_amount) return;
       const d = __spreadProps(__spreadValues({}, form), { target_amount: parseFloat(form.target_amount), current_amount: parseFloat(form.current_amount) || 0 });
-      if (modal === "new") setGoals((g) => [...g, __spreadProps(__spreadValues({}, d), { id: uid(), tenant_id: TID })]);
-      else setGoals((g) => g.map((gl) => gl.id === form.id ? d : gl));
+      if (modal === "new") setGoals((g) => [...g, __spreadProps(__spreadValues({}, d), { id: uid(), tenant_id: TID, deposits: [] })]);
+      else setGoals((g) => g.map((gl) => gl.id === form.id ? __spreadValues(__spreadValues({}, gl), d) : gl));
       setModal(null);
     };
     const del = (id) => {
       setGoals((g) => g.filter((gl) => gl.id !== id));
       setConfirm(null);
     };
-    return /* @__PURE__ */ import_react.default.createElement("div", null, confirm && /* @__PURE__ */ import_react.default.createElement(Confirm, { msg: 'Excluir "' + confirm.name + '"?', onOk: () => del(confirm.id), onCancel: () => setConfirm(null) }), modal && /* @__PURE__ */ import_react.default.createElement(Modal, { title: modal === "new" ? "Nova Meta" : "Editar Meta", onClose: () => setModal(null), width: 420 }, /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nome da Meta" }, /* @__PURE__ */ import_react.default.createElement("input", { value: form.name, onChange: (e) => f("name", e.target.value), placeholder: "Ex: Fundo de Emerg\xEAncia" })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } }, /* @__PURE__ */ import_react.default.createElement(Field, { label: "Valor Alvo (R$)" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "number", value: form.target_amount, onChange: (e) => f("target_amount", e.target.value), placeholder: "0,00", step: "0.01" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Valor Atual (R$)" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "number", value: form.current_amount, onChange: (e) => f("current_amount", e.target.value), placeholder: "0,00", step: "0.01" }))), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Prazo" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "date", value: form.deadline, onChange: (e) => f("deadline", e.target.value) })), /* @__PURE__ */ import_react.default.createElement("div", { className: "modal-footer" }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", onClick: () => setModal(null) }, "Cancelar"), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: save }, "Salvar"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "section-head" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, color: "var(--text2)" } }, goals.filter((g) => pct(g.current_amount, g.target_amount) >= 100).length, " de ", goals.length, " metas conclu\xEDdas"), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: () => {
+    const saveDeposit = () => {
+      const amount = parseFloat(depositForm.amount);
+      if (!amount || amount <= 0) return;
+      setGoals((g) => g.map((gl) => {
+        if (gl.id !== selectedGoal.id) return gl;
+        const deposits = gl.deposits || [];
+        let newDeposits;
+        if (editDeposit) {
+          newDeposits = deposits.map((d) => d.id === editDeposit.id ? __spreadProps(__spreadValues({}, d), { amount, date: depositForm.date, notes: depositForm.notes }) : d);
+        } else {
+          newDeposits = [...deposits, { id: uid(), amount, date: depositForm.date, notes: depositForm.notes }];
+        }
+        const current_amount = newDeposits.reduce((s, d) => s + d.amount, 0);
+        return __spreadProps(__spreadValues({}, gl), { deposits: newDeposits, current_amount });
+      }));
+      setSelectedGoal((prev) => {
+        const deposits = prev.deposits || [];
+        let newDeposits;
+        if (editDeposit) {
+          newDeposits = deposits.map((d) => d.id === editDeposit.id ? __spreadProps(__spreadValues({}, d), { amount, date: depositForm.date, notes: depositForm.notes }) : d);
+        } else {
+          newDeposits = [...deposits, { id: uid(), amount, date: depositForm.date, notes: depositForm.notes }];
+        }
+        const current_amount = newDeposits.reduce((s, d) => s + d.amount, 0);
+        return __spreadProps(__spreadValues({}, prev), { deposits: newDeposits, current_amount });
+      });
+      setDepositForm({ amount: "", date: TODAY, notes: "" });
+      setEditDeposit(null);
+      setModal("detail");
+    };
+    const delDeposit = (depositId) => {
+      setGoals((g) => g.map((gl) => {
+        if (gl.id !== selectedGoal.id) return gl;
+        const newDeposits = (gl.deposits || []).filter((d) => d.id !== depositId);
+        const current_amount = newDeposits.reduce((s, d) => s + d.amount, 0);
+        return __spreadProps(__spreadValues({}, gl), { deposits: newDeposits, current_amount });
+      }));
+      setSelectedGoal((prev) => {
+        const newDeposits = (prev.deposits || []).filter((d) => d.id !== depositId);
+        const current_amount = newDeposits.reduce((s, d) => s + d.amount, 0);
+        return __spreadProps(__spreadValues({}, prev), { deposits: newDeposits, current_amount });
+      });
+    };
+    const openDetail = (g) => {
+      setSelectedGoal(g);
+      setModal("detail");
+    };
+    const openDeposit = (g) => {
+      setSelectedGoal(g);
+      setDepositForm({ amount: "", date: TODAY, notes: "" });
+      setEditDeposit(null);
+      setModal("deposit");
+    };
+    const openEditDeposit = (g, dep) => {
+      setSelectedGoal(g);
+      setEditDeposit(dep);
+      setDepositForm({ amount: dep.amount, date: dep.date, notes: dep.notes || "" });
+      setModal("deposit");
+    };
+    return /* @__PURE__ */ import_react.default.createElement("div", null, confirm && /* @__PURE__ */ import_react.default.createElement(Confirm, { msg: 'Excluir "' + confirm.name + '"?', onOk: () => del(confirm.id), onCancel: () => setConfirm(null) }), (modal === "new" || modal === "edit") && /* @__PURE__ */ import_react.default.createElement(Modal, { title: modal === "new" ? "Nova Meta" : "Editar Meta", onClose: () => setModal(null), width: 420 }, /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nome da Meta" }, /* @__PURE__ */ import_react.default.createElement("input", { value: form.name, onChange: (e) => f("name", e.target.value), placeholder: "Ex: Fundo de Emerg\xEAncia" })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 } }, /* @__PURE__ */ import_react.default.createElement(Field, { label: "Valor Alvo (R$)" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "number", value: form.target_amount, onChange: (e) => f("target_amount", e.target.value), placeholder: "0,00", step: "0.01" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Valor Inicial (R$)" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "number", value: form.current_amount, onChange: (e) => f("current_amount", e.target.value), placeholder: "0,00", step: "0.01" }))), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Prazo" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "date", value: form.deadline, onChange: (e) => f("deadline", e.target.value) })), /* @__PURE__ */ import_react.default.createElement("div", { className: "modal-footer" }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", onClick: () => setModal(null) }, "Cancelar"), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: save }, "Salvar"))), modal === "deposit" && selectedGoal && /* @__PURE__ */ import_react.default.createElement(Modal, { title: editDeposit ? "Editar Dep\xF3sito" : "Novo Dep\xF3sito \u2014 " + selectedGoal.name, onClose: () => {
+      setModal("detail");
+      setEditDeposit(null);
+    }, width: 380 }, /* @__PURE__ */ import_react.default.createElement(Field, { label: "Valor (R$)" }, /* @__PURE__ */ import_react.default.createElement("input", { autoFocus: true, type: "number", value: depositForm.amount, onChange: (e) => df("amount", e.target.value), placeholder: "0,00", step: "0.01" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Data" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "date", value: depositForm.date, onChange: (e) => df("date", e.target.value) })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Observa\xE7\xE3o" }, /* @__PURE__ */ import_react.default.createElement("input", { value: depositForm.notes, onChange: (e) => df("notes", e.target.value), placeholder: "Opcional..." })), /* @__PURE__ */ import_react.default.createElement("div", { className: "modal-footer" }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", onClick: () => {
+      setModal("detail");
+      setEditDeposit(null);
+    } }, "Cancelar"), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: saveDeposit }, editDeposit ? "Salvar" : "Depositar"))), modal === "detail" && selectedGoal && /* @__PURE__ */ import_react.default.createElement(Modal, { title: selectedGoal.name, onClose: () => setModal(null), width: 480 }, (() => {
+      const g = selectedGoal;
+      const p = pct(g.current_amount, g.target_amount);
+      const done = p >= 100;
+      const deposits = [...g.deposits || []].sort((a, b) => b.date.localeCompare(a.date));
+      return /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", { style: { marginBottom: 16 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 32, fontWeight: 600, color: done ? "var(--green)" : "var(--gold)", marginBottom: 8 } }, p.toFixed(0), "%"), /* @__PURE__ */ import_react.default.createElement(Progress, { value: g.current_amount, max: g.target_amount, color: "var(--blue)" }), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 12, fontFamily: "var(--font-mono)", color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("span", null, "Acumulado: ", fmt2(g.current_amount)), /* @__PURE__ */ import_react.default.createElement("span", null, "Meta: ", fmt2(g.target_amount))), !done && /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text3)", marginTop: 4 } }, "Faltam ", fmt2(g.target_amount - g.current_amount))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text2)" } }, "Dep\xF3sitos (", deposits.length, ")"), /* @__PURE__ */ import_react.default.createElement(Btn, { size: "sm", onClick: () => openDeposit(g) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "plus", s: 13 }), "Depositar")), deposits.length === 0 && /* @__PURE__ */ import_react.default.createElement("div", { style: { textAlign: "center", color: "var(--text3)", fontSize: 13, padding: "20px 0" } }, "Nenhum dep\xF3sito ainda"), /* @__PURE__ */ import_react.default.createElement("div", { style: { maxHeight: 280, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 } }, deposits.map((dep) => /* @__PURE__ */ import_react.default.createElement("div", { key: dep.id, style: { display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--surface2)", borderRadius: 8, padding: "10px 12px" } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: "var(--green)" } }, "+ ", fmt2(dep.amount)), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text2)", marginTop: 2 } }, fmtDate2(dep.date), dep.notes ? " \xB7 " + dep.notes : "")), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 4 } }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", size: "sm", onClick: () => openEditDeposit(g, dep) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "edit", s: 12 })), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger", size: "sm", onClick: () => delDeposit(dep.id) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "trash", s: 12 })))))), /* @__PURE__ */ import_react.default.createElement("div", { className: "modal-footer", style: { marginTop: 16 } }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", onClick: () => {
+        setForm(__spreadValues({}, g));
+        setModal("edit");
+      } }, "Editar Meta"), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger", onClick: () => {
+        setModal(null);
+        setConfirm(g);
+      } }, "Excluir")));
+    })()), /* @__PURE__ */ import_react.default.createElement("div", { className: "section-head" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, color: "var(--text2)" } }, goals.filter((g) => pct(g.current_amount, g.target_amount) >= 100).length, " de ", goals.length, " metas conclu\xEDdas"), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: () => {
       setForm({ name: "", target_amount: "", current_amount: "", deadline: "" });
       setModal("new");
     } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "plus", s: 14 }), "Nova Meta")), /* @__PURE__ */ import_react.default.createElement("div", { className: "auto-grid-260" }, goals.map((g) => {
       const p = pct(g.current_amount, g.target_amount);
       const daysLeft = g.deadline ? Math.ceil((/* @__PURE__ */ new Date(g.deadline + "T12:00:00") - NOW) / 864e5) : null;
       const done = p >= 100;
-      return /* @__PURE__ */ import_react.default.createElement("div", { key: g.id, className: "goal-card" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontWeight: 600, fontSize: 14 } }, g.name), /* @__PURE__ */ import_react.default.createElement(Badge, { color: done ? "green" : daysLeft !== null && daysLeft < 30 ? "gold" : "blue" }, done ? "\u2713 Conclu\xEDda" : daysLeft !== null && daysLeft < 30 ? "Urgente" : "Em andamento")), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 500, color: done ? "var(--green)" : "var(--text)", marginBottom: 8 } }, p.toFixed(0), "%"), /* @__PURE__ */ import_react.default.createElement(Progress, { value: g.current_amount, max: g.target_amount, color: "var(--blue)" }), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("span", null, fmt2(g.current_amount)), /* @__PURE__ */ import_react.default.createElement("span", null, fmt2(g.target_amount))), !done && /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text3)", marginTop: 6 } }, "Faltam ", fmt2(g.target_amount - g.current_amount)), g.deadline && /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text3)", marginTop: 2 } }, "Prazo: ", fmtDate2(g.deadline), daysLeft !== null ? ` (${daysLeft}d)` : ""), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 6, marginTop: 14 } }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", size: "sm", onClick: () => {
+      return /* @__PURE__ */ import_react.default.createElement("div", { key: g.id, className: "goal-card", style: { cursor: "pointer" }, onClick: () => openDetail(g) }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontWeight: 600, fontSize: 14 } }, g.name), /* @__PURE__ */ import_react.default.createElement(Badge, { color: done ? "green" : daysLeft !== null && daysLeft < 30 ? "gold" : "blue" }, done ? "\u2713 Conclu\xEDda" : daysLeft !== null && daysLeft < 30 ? "Urgente" : "Em andamento")), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 500, color: done ? "var(--green)" : "var(--text)", marginBottom: 8 } }, p.toFixed(0), "%"), /* @__PURE__ */ import_react.default.createElement(Progress, { value: g.current_amount, max: g.target_amount, color: "var(--blue)" }), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("span", null, fmt2(g.current_amount)), /* @__PURE__ */ import_react.default.createElement("span", null, fmt2(g.target_amount))), !done && /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text3)", marginTop: 6 } }, "Faltam ", fmt2(g.target_amount - g.current_amount)), g.deadline && /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text3)", marginTop: 2 } }, "Prazo: ", fmtDate2(g.deadline), daysLeft !== null ? ` (${daysLeft}d)` : ""), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 6, marginTop: 14 }, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", size: "sm", onClick: () => openDeposit(g) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "plus", s: 13 }), "Depositar"), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", size: "sm", onClick: () => {
         setForm(__spreadValues({}, g));
         setModal("edit");
-      } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "edit", s: 13 }), "Editar"), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger", size: "sm", onClick: () => setConfirm(g) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "trash", s: 13 }))));
+      } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "edit", s: 13 })), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger", size: "sm", onClick: () => setConfirm(g) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "trash", s: 13 }))));
     })));
   }
   function ReportsPage({ txs, accs, cats, ccs, totalLiquid, fmt: fmt2, fmtDate: fmtDate2 }) {
