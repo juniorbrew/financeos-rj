@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><!-- build:20260304-114541 -->
+<html lang="pt-BR" data-theme="dark"><!-- build:20260304-120506 -->
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
@@ -8,6 +8,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f0b429'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='serif' fill='%23000'>F</text></svg>"/>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  <script>try{var t=localStorage.getItem("fos-theme")||"dark";document.documentElement.setAttribute("data-theme",t);}catch{}</script>
   <style id="app-css">
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
@@ -944,7 +945,7 @@
 
 </style>
 </head>
-<body style="margin:0;padding:0;background:#0a0a0a;">
+<body style="margin:0;padding:0;background:var(--bg);">
   <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;"><div style="width:40px;height:40px;border:3px solid #f0b429;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div><div style="color:#f0b429;font-size:14px;letter-spacing:0.1em;font-family:sans-serif;">CARREGANDO...</div></div></div>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
@@ -1081,6 +1082,36 @@
     --radius:    12px;
     --shadow:    0 4px 24px rgba(0,0,0,0.5);
   }
+
+  /* \u2500\u2500 TEMA CLARO \u2500\u2500 */
+  [data-theme="light"] {
+    --bg:        #f0f0f5;
+    --surface:   #ffffff;
+    --surface2:  #f5f5fa;
+    --border:    #e0e0ea;
+    --border2:   #d0d0de;
+    --gold:      #d4920a;
+    --gold-dim:  #d4920a18;
+    --green:     #16a34a;
+    --green-dim: #16a34a15;
+    --red:       #dc2626;
+    --red-dim:   #dc262615;
+    --blue:      #2563eb;
+    --blue-dim:  #2563eb15;
+    --purple:    #7c3aed;
+    --purple-dim:#7c3aed15;
+    --text:      #111118;
+    --text2:     #555568;
+    --text3:     #aaaabc;
+    --shadow:    0 4px 24px rgba(0,0,0,0.1);
+  }
+  [data-theme="light"] body { background: var(--bg); }
+  [data-theme="light"] ::-webkit-scrollbar-track { background: var(--surface2); }
+  [data-theme="light"] ::-webkit-scrollbar-thumb { background: var(--border2); }
+  [data-theme="light"] input, [data-theme="light"] select, [data-theme="light"] textarea {
+    background: var(--surface); color: var(--text); border-color: var(--border);
+  }
+  [data-theme="light"] .bottom-nav { background: rgba(240,240,245,0.92) !important; border-top-color: var(--border) !important; }
   body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: var(--text-base); line-height: var(--lh-normal); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: var(--surface); }
@@ -3095,6 +3126,21 @@
     const ME_ACTIVE = __spreadProps(__spreadValues({}, ME), { id: authUser2.id, name: authUser2.name, email: authUser2.email });
     const TENANT_ACTIVE = __spreadProps(__spreadValues({}, TENANT), { name: authUser2.tenant });
     const ud = authUser2.data;
+    const [theme, setTheme] = (0, import_react.useState)(() => {
+      try {
+        return localStorage.getItem("fos-theme") || "dark";
+      } catch (e) {
+        return "dark";
+      }
+    });
+    (0, import_react.useEffect)(() => {
+      document.documentElement.setAttribute("data-theme", theme);
+      try {
+        localStorage.setItem("fos-theme", theme);
+      } catch (e) {
+      }
+    }, [theme]);
+    const toggleTheme = () => setTheme((t) => t === "dark" ? "light" : "dark");
     const [page, setPage] = (0, import_react.useState)("dashboard");
     const [collapsed, setCollapsed] = (0, import_react.useState)(false);
     const [drawerOpen, setDrawerOpen] = (0, import_react.useState)(false);
@@ -3220,7 +3266,7 @@
       },
       collapsed ? /* @__PURE__ */ import_react.default.createElement(Ic, { n: item.icon, s: 18 }) : /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement(Ic, { n: item.icon, s: 16 }), item.label, item.pro && !isPro && /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 10, c: "var(--gold)" })),
       page === item.id && collapsed && /* @__PURE__ */ import_react.default.createElement("span", { className: "nav-dot" })
-    ))), /* @__PURE__ */ import_react.default.createElement("div", { className: "sidebar-bottom" }, !collapsed && /* @__PURE__ */ import_react.default.createElement("div", { className: "user-pill" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "avatar" }, ME_ACTIVE.name[0]), /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5 } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, ME_ACTIVE.name), authUser2.plan === "pro" && /* @__PURE__ */ import_react.default.createElement("span", { className: "pro-badge" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 8, c: "var(--gold)" }), "PRO")), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)" } }, TENANT_ACTIVE.name))), !collapsed && authUser2.plan !== "pro" && /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", style: { color: "var(--gold)" }, onClick: onUpgrade2 }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 18 }), "Assinar Pro"), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", onClick: () => setCollapsed((c) => !c) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "menu", s: 18 }), !collapsed && "Recolher"), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", style: { color: "var(--red)" }, onClick: onLogout }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 18, c: "var(--red)" }), !collapsed && "Sair"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "main" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "topbar" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ import_react.default.createElement("button", { className: "menu-btn", style: { display: "none" }, onClick: () => setDrawerOpen(true), "aria-label": "Abrir menu" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "menu", s: 20 })), /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { className: "topbar-title" }, (_a = NAV.find((n) => n.id === page)) == null ? void 0 : _a.label), /* @__PURE__ */ import_react.default.createElement("div", { className: "topbar-sub" }, TENANT_ACTIVE.name, " \xB7 ", NOW.toLocaleDateString("pt-BR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })))), /* @__PURE__ */ import_react.default.createElement("div", { className: "topbar-right-desktop", style: { display: "flex", gap: 10, alignItems: "center" } }, alerts.length > 0 && /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--gold-dim)", color: "var(--gold)", padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, display: "flex", gap: 6, alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "alert", s: 14 }), alerts.length, " alerta", alerts.length > 1 ? "s" : ""), /* @__PURE__ */ import_react.default.createElement("div", { className: "avatar" }, ME_ACTIVE.name[0]))), alerts.length > 0 && page === "dashboard" && alerts.map((a, i) => /* @__PURE__ */ import_react.default.createElement("div", { key: i, className: "alert-bar" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "alert", s: 14 }), a.msg)), /* @__PURE__ */ import_react.default.createElement("div", { className: "content fade-up", key: page }, PAGES[page]))), quickTx && /* @__PURE__ */ import_react.default.createElement(
+    ))), /* @__PURE__ */ import_react.default.createElement("div", { className: "sidebar-bottom" }, !collapsed && /* @__PURE__ */ import_react.default.createElement("div", { className: "user-pill" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "avatar" }, ME_ACTIVE.name[0]), /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5 } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, ME_ACTIVE.name), authUser2.plan === "pro" && /* @__PURE__ */ import_react.default.createElement("span", { className: "pro-badge" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 8, c: "var(--gold)" }), "PRO")), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)" } }, TENANT_ACTIVE.name))), !collapsed && authUser2.plan !== "pro" && /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", style: { color: "var(--gold)" }, onClick: onUpgrade2 }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 18 }), "Assinar Pro"), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", onClick: () => setCollapsed((c) => !c) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "menu", s: 18 }), !collapsed && "Recolher"), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", onClick: toggleTheme }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 16, lineHeight: 1 } }, theme === "dark" ? "\u2600\uFE0F" : "\u{1F319}"), !collapsed && (theme === "dark" ? " Modo Claro" : " Modo Escuro")), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", style: { color: "var(--red)" }, onClick: onLogout }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 18, c: "var(--red)" }), !collapsed && "Sair"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "main" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "topbar" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ import_react.default.createElement("button", { className: "menu-btn", style: { display: "none" }, onClick: () => setDrawerOpen(true), "aria-label": "Abrir menu" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "menu", s: 20 })), /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { className: "topbar-title" }, (_a = NAV.find((n) => n.id === page)) == null ? void 0 : _a.label), /* @__PURE__ */ import_react.default.createElement("div", { className: "topbar-sub" }, TENANT_ACTIVE.name, " \xB7 ", NOW.toLocaleDateString("pt-BR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })))), /* @__PURE__ */ import_react.default.createElement("div", { className: "topbar-right-desktop", style: { display: "flex", gap: 10, alignItems: "center" } }, alerts.length > 0 && /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--gold-dim)", color: "var(--gold)", padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, display: "flex", gap: 6, alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "alert", s: 14 }), alerts.length, " alerta", alerts.length > 1 ? "s" : ""), /* @__PURE__ */ import_react.default.createElement("button", { onClick: toggleTheme, title: theme === "dark" ? "Modo claro" : "Modo escuro", style: { width: 36, height: 36, borderRadius: 99, border: "1px solid var(--border)", background: "var(--surface2)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "var(--text2)", transition: "all 0.2s", flexShrink: 0 } }, theme === "dark" ? "\u2600\uFE0F" : "\u{1F319}"), /* @__PURE__ */ import_react.default.createElement("div", { className: "avatar" }, ME_ACTIVE.name[0]))), alerts.length > 0 && page === "dashboard" && alerts.map((a, i) => /* @__PURE__ */ import_react.default.createElement("div", { key: i, className: "alert-bar" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "alert", s: 14 }), a.msg)), /* @__PURE__ */ import_react.default.createElement("div", { className: "content fade-up", key: page }, PAGES[page]))), quickTx && /* @__PURE__ */ import_react.default.createElement(
       QuickTxModal,
       {
         accs,
@@ -3254,7 +3300,9 @@
     ))), /* @__PURE__ */ import_react.default.createElement("div", { className: "sidebar-bottom" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "user-pill" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "avatar" }, ME_ACTIVE.name[0]), /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5 } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, fontWeight: 600 } }, ME_ACTIVE.name), authUser2.plan === "pro" && /* @__PURE__ */ import_react.default.createElement("span", { className: "pro-badge" }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 8, c: "var(--gold)" }), "PRO")), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)" } }, TENANT_ACTIVE.name))), authUser2.plan !== "pro" && /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", style: { color: "var(--gold)" }, onClick: () => {
       setDrawerOpen(false);
       onUpgrade2();
-    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 16 }), "Assinar Pro"), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", onClick: () => setDrawerOpen(false) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 16 }), "Fechar menu"), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", style: { color: "var(--red)" }, onClick: () => {
+    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 16 }), "Assinar Pro"), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", onClick: () => setDrawerOpen(false) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 16 }), "Fechar menu"), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", onClick: () => {
+      toggleTheme();
+    } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 16, lineHeight: 1 } }, theme === "dark" ? "\u2600\uFE0F" : "\u{1F319}"), theme === "dark" ? " Modo Claro" : " Modo Escuro"), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", style: { color: "var(--red)" }, onClick: () => {
       setDrawerOpen(false);
       onLogout();
     } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 16, c: "var(--red)" }), "Sair da conta"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "drawer-dismiss" })));
