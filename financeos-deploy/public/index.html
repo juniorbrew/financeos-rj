@@ -1,14 +1,11 @@
-<!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark"><!-- build:20260305-020333 -->
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <title>FinanceOS</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f0b429'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='serif' fill='%23000'>F</text></svg>"/>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-  <script>try{var t=localStorage.getItem("fos-theme")||"dark";document.documentElement.setAttribute("data-theme",t);}catch{}</script>
-  <style id="app-css">
+<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-020759 -->
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/><title>FinanceOS</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f0b429'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='serif' fill='%23000'>F</text></svg>"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<script>try{var t=localStorage.getItem("fos-theme")||"dark";document.documentElement.setAttribute("data-theme",t);}catch{}</script>
+<style id="app-css">
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
   /* Font aliases — swap here to change the whole app */
@@ -942,14 +939,13 @@
   }
   .cat-inline-cancel:hover { color: var(--text); }
 
-</style>
-</head>
+</style></head>
 <body style="margin:0;padding:0;background:var(--bg);">
-  <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;"><div style="width:40px;height:40px;border:3px solid #f0b429;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div><div style="color:#f0b429;font-size:14px;letter-spacing:0.1em;font-family:sans-serif;">CARREGANDO...</div></div></div>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
-  <script>var{useState,useEffect,useMemo,useCallback,useRef}=React;</script>
-  <script>var __require=(id)=>{if(id==="react")return React;if(id==="react-dom/client")return ReactDOM;return{};};(() => {
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;"><div style="width:40px;height:40px;border:3px solid #f0b429;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div><div style="color:#f0b429;font-size:14px;letter-spacing:0.1em;font-family:sans-serif;">CARREGANDO...</div></div></div>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script>var{useState,useEffect,useMemo,useCallback,useRef}=React;</script>
+<script>var __require=(id)=>{if(id==="react")return React;if(id==="react-dom/client")return ReactDOM;return{};};(() => {
   var __create = Object.create;
   var __defProp = Object.defineProperty;
   var __defProps = Object.defineProperties;
@@ -4269,15 +4265,18 @@ ${catInfo}`);
     const filteredBills = bills.filter((b) => {
       if (filterCard && b.credit_card_id !== filterCard) return false;
       if (filterStatus && b.status !== filterStatus) return false;
+      const hasItems = txs.some((t) => t.bill_id === b.id && t.type === "card_expense");
+      if (!hasItems && b.total_amount === 0) return false;
       return true;
     }).sort((a, b) => {
       const order = { open: 0, closed: 1, paid: 2 };
       if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
       return b.closing_date.localeCompare(a.closing_date);
     });
-    const totalOpen = bills.filter((b) => b.status === "open").reduce((s, b) => s + b.total_amount, 0);
-    const totalClosed = bills.filter((b) => b.status === "closed").reduce((s, b) => s + b.total_amount, 0);
-    const totalPaid = bills.filter((b) => b.status === "paid").reduce((s, b) => s + b.total_amount, 0);
+    const relevantBills = bills.filter((b) => txs.some((t) => t.bill_id === b.id && t.type === "card_expense") || b.total_amount > 0);
+    const totalOpen = relevantBills.filter((b) => b.status === "open").reduce((s, b) => s + b.total_amount, 0);
+    const totalClosed = relevantBills.filter((b) => b.status === "closed").reduce((s, b) => s + b.total_amount, 0);
+    const totalPaid = relevantBills.filter((b) => b.status === "paid").reduce((s, b) => s + b.total_amount, 0);
     const STATUS_CFG_BILLS = {
       open: { label: "Aberta", bg: "var(--blue-dim)", fg: "var(--blue)" },
       closed: { label: "Fechada", bg: "var(--gold-dim)", fg: "var(--gold)" },
@@ -4444,7 +4443,10 @@ ${catInfo}`);
       fontWeight: 700,
       fontSize: 13,
       transition: "all 0.2s"
-    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: tab.icon, s: 14, c: activeTab === tab.id ? "#000" : "var(--text3)" }), tab.label, tab.id === "faturas" && bills.filter((b) => b.status !== "paid").length > 0 && /* @__PURE__ */ import_react.default.createElement("span", { style: { background: activeTab === "faturas" ? "rgba(0,0,0,0.2)" : "var(--red)", color: "#fff", borderRadius: 99, fontSize: 10, fontWeight: 700, padding: "1px 6px" } }, bills.filter((b) => b.status !== "paid").length)))), activeTab === "cards" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 20, alignItems: "flex-start" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 10, marginBottom: 20, alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, position: "relative" } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "search", s: 14, c: "var(--text3)", style: { position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" } }), /* @__PURE__ */ import_react.default.createElement(
+    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: tab.icon, s: 14, c: activeTab === tab.id ? "#000" : "var(--text3)" }), tab.label, tab.id === "faturas" && (() => {
+      const cnt = bills.filter((b) => b.status !== "paid" && (txs.some((t) => t.bill_id === b.id && t.type === "card_expense") || b.total_amount > 0)).length;
+      return cnt > 0 ? /* @__PURE__ */ import_react.default.createElement("span", { style: { background: activeTab === "faturas" ? "rgba(0,0,0,0.2)" : "var(--red)", color: "#fff", borderRadius: 99, fontSize: 10, fontWeight: 700, padding: "1px 6px" } }, cnt) : null;
+    })()))), activeTab === "cards" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 20, alignItems: "flex-start" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 10, marginBottom: 20, alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, position: "relative" } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "search", s: 14, c: "var(--text3)", style: { position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)" } }), /* @__PURE__ */ import_react.default.createElement(
       "input",
       {
         value: searchCard,
@@ -5031,5 +5033,4 @@ ${catInfo}`);
   var root = import_client.default.createRoot(document.getElementById("root"));
   root.render(import_react.default.createElement(AppWithBoundary));
 })();
-</script>
-</body></html>
+</script></body></html>
