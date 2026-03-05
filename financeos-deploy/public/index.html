@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark"><!-- build:20260304-173725 -->
+<html lang="pt-BR" data-theme="dark"><!-- build:20260305-010343 -->
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
@@ -2164,7 +2164,8 @@
     star: "M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z",
     target: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-12c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z",
     bill: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z",
-    chart: "M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"
+    chart: "M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z",
+    repeat: "M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"
   };
   var Ic = ({ n, s = 16, c = "currentColor" }) => /* @__PURE__ */ import_react.default.createElement("svg", { width: s, height: s, viewBox: "0 0 24 24", fill: c, style: { flexShrink: 0 } }, /* @__PURE__ */ import_react.default.createElement("path", { d: PATHS[n] || PATHS.dashboard }));
   var Badge = ({ children, color = "gray" }) => /* @__PURE__ */ import_react.default.createElement("span", { className: `badge badge-${color}` }, children);
@@ -3406,6 +3407,7 @@
       goals: /* @__PURE__ */ import_react.default.createElement(GoalsPage, __spreadValues({}, shared)),
       reports: /* @__PURE__ */ import_react.default.createElement(ReportsPage, __spreadProps(__spreadValues({}, shared), { totalLiquid })),
       categories: /* @__PURE__ */ import_react.default.createElement(CategoriesPage, __spreadValues({}, shared)),
+      recorrencias: /* @__PURE__ */ import_react.default.createElement(RecorrenciasPage, __spreadValues({}, shared)),
       users: /* @__PURE__ */ import_react.default.createElement(UsersPage, __spreadValues({}, shared)),
       settings: /* @__PURE__ */ import_react.default.createElement(SettingsPage, { tenant: TENANT, user: ME, dashWidgets, saveDashWidgets, notifs, saveNotifs })
     };
@@ -3639,7 +3641,7 @@
   function TransactionsPage({ accs, cats, setCats, ccs, bills, setBills, txs, setTxs, computeBalance, curr, fmt: fmt2, fmtDate: fmtDate2, fmtShort: fmtShort2, openNewOnMount, onNewTxOpened, isPro = true, onUpgrade: onUpgrade2 }) {
     var _a, _b, _c;
     const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-    const blank = { description: "", amount: "", date: today, account_id: ((_a = accs[0]) == null ? void 0 : _a.id) || "", category_id: "", credit_card_id: ((_b = ccs[0]) == null ? void 0 : _b.id) || "", transfer_to: ((_c = accs[1]) == null ? void 0 : _c.id) || "", status: "paid", notes: "", installments: "1" };
+    const blank = { description: "", amount: "", date: today, account_id: ((_a = accs[0]) == null ? void 0 : _a.id) || "", category_id: "", credit_card_id: ((_b = ccs[0]) == null ? void 0 : _b.id) || "", transfer_to: ((_c = accs[1]) == null ? void 0 : _c.id) || "", status: "paid", notes: "", installments: "1", is_recurring: false, recurring_freq: "monthly", recurring_end: "" };
     const FREE_TX_LIMIT = 30;
     const atTxLimit = !isPro && txs.length >= FREE_TX_LIMIT;
     const [txType, setTxType] = (0, import_react.useState)("expense");
@@ -3698,9 +3700,42 @@
       const amt = parseFloat(form.amount);
       if (isNaN(amt) || amt <= 0) return;
       const newTxs = [];
+      const genRecurringDates = (startDate, freq, endDate) => {
+        const dates = [startDate];
+        if (!form.is_recurring) return dates;
+        const end = endDate ? /* @__PURE__ */ new Date(endDate + "T12:00:00") : /* @__PURE__ */ new Date(startDate + "T12:00:00");
+        if (!endDate) {
+          for (let i = 1; i < 12; i++) {
+            const d = /* @__PURE__ */ new Date(startDate + "T12:00:00");
+            if (freq === "daily") d.setDate(d.getDate() + i);
+            if (freq === "weekly") d.setDate(d.getDate() + i * 7);
+            if (freq === "monthly") d.setMonth(d.getMonth() + i);
+            if (freq === "yearly") d.setFullYear(d.getFullYear() + i);
+            dates.push(d.toISOString().slice(0, 10));
+          }
+        } else {
+          let cur = /* @__PURE__ */ new Date(startDate + "T12:00:00");
+          while (true) {
+            const next = new Date(cur);
+            if (freq === "daily") next.setDate(next.getDate() + 1);
+            if (freq === "weekly") next.setDate(next.getDate() + 7);
+            if (freq === "monthly") next.setMonth(next.getMonth() + 1);
+            if (freq === "yearly") next.setFullYear(next.getFullYear() + 1);
+            if (next > end) break;
+            dates.push(next.toISOString().slice(0, 10));
+            cur = next;
+            if (dates.length > 60) break;
+          }
+        }
+        return dates;
+      };
+      const recurringId = form.is_recurring ? uid() : null;
       if (txType === "transfer") {
-        newTxs.push(__spreadProps(__spreadValues({}, form), { id: uid(), tenant_id: TID, type: "transfer", amount: amt, notes: `transfer_out:${form.transfer_to}`, transfer_to: void 0, credit_card_id: null, bill_id: null }));
-        newTxs.push(__spreadProps(__spreadValues({}, form), { id: uid(), tenant_id: TID, type: "transfer", amount: amt, account_id: form.transfer_to, notes: `transfer_in:${form.account_id}`, transfer_to: void 0, credit_card_id: null, bill_id: null }));
+        const dates = genRecurringDates(form.date, form.recurring_freq, form.recurring_end);
+        dates.forEach((date) => {
+          newTxs.push(__spreadProps(__spreadValues({}, form), { id: uid(), tenant_id: TID, type: "transfer", amount: amt, date, notes: `transfer_out:${form.transfer_to}`, transfer_to: void 0, credit_card_id: null, bill_id: null, recurring_id: recurringId }));
+          newTxs.push(__spreadProps(__spreadValues({}, form), { id: uid(), tenant_id: TID, type: "transfer", amount: amt, date, account_id: form.transfer_to, notes: `transfer_in:${form.account_id}`, transfer_to: void 0, credit_card_id: null, bill_id: null, recurring_id: recurringId }));
+        });
       } else if (txType === "card") {
         const cc = ccs.find((c) => c.id === form.credit_card_id);
         const n = parseInt(form.installments) || 1;
@@ -3719,10 +3754,13 @@
             setBills((b) => [...b, bill]);
           }
           setBills((b) => b.map((bl) => bl.id === bill.id ? __spreadProps(__spreadValues({}, bl), { total_amount: bl.total_amount + instAmt }) : bl));
-          newTxs.push(__spreadProps(__spreadValues({}, form), { id: uid(), tenant_id: TID, type: "card_expense", amount: instAmt, date: bd, account_id: null, bill_id: bill.id, description: n > 1 ? `${form.description} (${i + 1}/${n})` : form.description, transfer_to: void 0 }));
+          newTxs.push(__spreadProps(__spreadValues({}, form), { id: uid(), tenant_id: TID, type: "card_expense", amount: instAmt, date: bd, account_id: null, bill_id: bill.id, description: n > 1 ? `${form.description} (${i + 1}/${n})` : form.description, transfer_to: void 0, recurring_id: recurringId }));
         }
       } else {
-        newTxs.push(__spreadProps(__spreadValues({}, form), { id: uid(), tenant_id: TID, type: txType, amount: amt, credit_card_id: null, bill_id: null, transfer_to: void 0 }));
+        const dates = genRecurringDates(form.date, form.recurring_freq, form.recurring_end);
+        dates.forEach((date) => {
+          newTxs.push(__spreadProps(__spreadValues({}, form), { id: uid(), tenant_id: TID, type: txType, amount: amt, date, credit_card_id: null, bill_id: null, transfer_to: void 0, recurring_id: recurringId }));
+        });
       }
       if (editId) {
         setTxs((t) => t.map((tr) => tr.id === editId ? __spreadProps(__spreadValues({}, newTxs[0]), { id: editId }) : tr));
@@ -3775,7 +3813,35 @@
           fv("category_id", newCat.id);
         }
       }
-    ), /* @__PURE__ */ import_react.default.createElement("div", { style: { position: "sticky", bottom: 0, background: "var(--surface)", paddingTop: 12, marginTop: 4 } }, /* @__PURE__ */ import_react.default.createElement("button", { className: "tx-save-btn " + txType, onClick: save, style: { width: "100%", marginBottom: 0 } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "check", s: 16, c: txType === "income" || txType === "transfer" ? "#000" : "#fff" }), editId ? "Salvar Altera\xE7\xF5es" : saveLabel[txType]))), /* @__PURE__ */ import_react.default.createElement("div", { className: "section-head" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--green-dim)", padding: "10px 16px", borderRadius: 8 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em" } }, "Entradas"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", color: "var(--green)", fontWeight: 600 } }, fmt2(totals.income))), /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--red-dim)", padding: "10px 16px", borderRadius: 8 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em" } }, "Sa\xEDdas"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", color: "var(--red)", fontWeight: 600 } }, fmt2(totals.out)))), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: openNew }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "plus", s: 14 }), "Nova Transa\xE7\xE3o")), /* @__PURE__ */ import_react.default.createElement("div", { className: "filter-bar" }, /* @__PURE__ */ import_react.default.createElement("input", { placeholder: "Buscar...", value: filter.search, onChange: (e) => filt("search", e.target.value), style: { minWidth: 0, flex: 2 } }), /* @__PURE__ */ import_react.default.createElement("input", { type: "month", value: filter.period, onChange: (e) => filt("period", e.target.value), style: { width: 160, minWidth: 0 } }), /* @__PURE__ */ import_react.default.createElement("select", { value: filter.type, onChange: (e) => filt("type", e.target.value), style: { width: 160, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("option", { value: "" }, "Todos os tipos"), Object.entries(TYPE_MAP).map(([k, v]) => /* @__PURE__ */ import_react.default.createElement("option", { key: k, value: k }, v.label))), /* @__PURE__ */ import_react.default.createElement("select", { value: filter.account, onChange: (e) => filt("account", e.target.value), style: { width: 160, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("option", { value: "" }, "Todas as contas"), accs.map((a) => /* @__PURE__ */ import_react.default.createElement("option", { key: a.id, value: a.id }, a.name)))), /* @__PURE__ */ import_react.default.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ import_react.default.createElement("table", null, /* @__PURE__ */ import_react.default.createElement("thead", null, /* @__PURE__ */ import_react.default.createElement("tr", null, ["Data", "Descri\xE7\xE3o", "Tipo", "Conta / Cart\xE3o", "Status", "Valor", ""].map((h) => /* @__PURE__ */ import_react.default.createElement("th", { key: h }, h)))), /* @__PURE__ */ import_react.default.createElement("tbody", null, filtered.map((t) => {
+    ), (txType === "income" || txType === "expense") && /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--surface2)", borderRadius: 10, padding: "12px 14px", border: "1px solid var(--border)", marginTop: 4 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: form.is_recurring ? 12 : 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "repeat", s: 15, c: "var(--gold)" }), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 13, fontWeight: 600, color: "var(--text)" } }, "Transa\xE7\xE3o Recorrente")), /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => fv("is_recurring", !form.is_recurring), style: {
+      width: 42,
+      height: 24,
+      borderRadius: 99,
+      border: "none",
+      cursor: "pointer",
+      background: form.is_recurring ? "var(--gold)" : "var(--border2)",
+      position: "relative",
+      transition: "background 0.2s",
+      flexShrink: 0
+    } }, /* @__PURE__ */ import_react.default.createElement("div", { style: {
+      width: 18,
+      height: 18,
+      borderRadius: "50%",
+      background: "#fff",
+      position: "absolute",
+      top: 3,
+      transition: "left 0.2s",
+      left: form.is_recurring ? 21 : 3
+    } }))), form.is_recurring && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } }, /* @__PURE__ */ import_react.default.createElement(Field, { label: "Frequ\xEAncia" }, /* @__PURE__ */ import_react.default.createElement("select", { value: form.recurring_freq, onChange: (e) => fv("recurring_freq", e.target.value) }, /* @__PURE__ */ import_react.default.createElement("option", { value: "daily" }, "Di\xE1ria"), /* @__PURE__ */ import_react.default.createElement("option", { value: "weekly" }, "Semanal"), /* @__PURE__ */ import_react.default.createElement("option", { value: "monthly" }, "Mensal"), /* @__PURE__ */ import_react.default.createElement("option", { value: "yearly" }, "Anual"))), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Repetir at\xE9 (opcional)" }, /* @__PURE__ */ import_react.default.createElement(
+      "input",
+      {
+        type: "date",
+        value: form.recurring_end,
+        onChange: (e) => fv("recurring_end", e.target.value),
+        min: form.date,
+        placeholder: "Sem data fim"
+      }
+    )), /* @__PURE__ */ import_react.default.createElement("div", { style: { gridColumn: "1/-1", fontSize: 11, color: "var(--text3)", display: "flex", alignItems: "center", gap: 5 } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "alert", s: 11, c: "var(--gold)" }), form.recurring_end ? `Ser\xE1 gerada automaticamente at\xE9 ${(/* @__PURE__ */ new Date(form.recurring_end + "T12:00:00")).toLocaleDateString("pt-BR")}` : "Sem data fim: ser\xE3o geradas 12 ocorr\xEAncias"))), /* @__PURE__ */ import_react.default.createElement("div", { style: { position: "sticky", bottom: 0, background: "var(--surface)", paddingTop: 12, marginTop: 4 } }, /* @__PURE__ */ import_react.default.createElement("button", { className: "tx-save-btn " + txType, onClick: save, style: { width: "100%", marginBottom: 0 } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "check", s: 16, c: txType === "income" || txType === "transfer" ? "#000" : "#fff" }), editId ? "Salvar Altera\xE7\xF5es" : saveLabel[txType]))), /* @__PURE__ */ import_react.default.createElement("div", { className: "section-head" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 10, flexWrap: "wrap" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--green-dim)", padding: "10px 16px", borderRadius: 8 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em" } }, "Entradas"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", color: "var(--green)", fontWeight: 600 } }, fmt2(totals.income))), /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--red-dim)", padding: "10px 16px", borderRadius: 8 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text2)", textTransform: "uppercase", letterSpacing: "0.08em" } }, "Sa\xEDdas"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", color: "var(--red)", fontWeight: 600 } }, fmt2(totals.out)))), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: openNew }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "plus", s: 14 }), "Nova Transa\xE7\xE3o")), /* @__PURE__ */ import_react.default.createElement("div", { className: "filter-bar" }, /* @__PURE__ */ import_react.default.createElement("input", { placeholder: "Buscar...", value: filter.search, onChange: (e) => filt("search", e.target.value), style: { minWidth: 0, flex: 2 } }), /* @__PURE__ */ import_react.default.createElement("input", { type: "month", value: filter.period, onChange: (e) => filt("period", e.target.value), style: { width: 160, minWidth: 0 } }), /* @__PURE__ */ import_react.default.createElement("select", { value: filter.type, onChange: (e) => filt("type", e.target.value), style: { width: 160, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("option", { value: "" }, "Todos os tipos"), Object.entries(TYPE_MAP).map(([k, v]) => /* @__PURE__ */ import_react.default.createElement("option", { key: k, value: k }, v.label))), /* @__PURE__ */ import_react.default.createElement("select", { value: filter.account, onChange: (e) => filt("account", e.target.value), style: { width: 160, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("option", { value: "" }, "Todas as contas"), accs.map((a) => /* @__PURE__ */ import_react.default.createElement("option", { key: a.id, value: a.id }, a.name)))), /* @__PURE__ */ import_react.default.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { overflowX: "auto" } }, /* @__PURE__ */ import_react.default.createElement("table", null, /* @__PURE__ */ import_react.default.createElement("thead", null, /* @__PURE__ */ import_react.default.createElement("tr", null, ["Data", "Descri\xE7\xE3o", "Tipo", "Conta / Cart\xE3o", "Status", "Valor", ""].map((h) => /* @__PURE__ */ import_react.default.createElement("th", { key: h }, h)))), /* @__PURE__ */ import_react.default.createElement("tbody", null, filtered.map((t) => {
       const acc = accs.find((a) => a.id === t.account_id);
       const cc = ccs.find((c) => c.id === t.credit_card_id);
       const tm = TYPE_MAP[t.type] || { label: t.type, color: "gray" };
@@ -4522,6 +4588,43 @@
         setModal("edit");
       } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "edit", s: 13 })), u.id !== ME.id && /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger", size: "sm btn-icon", onClick: () => setConfirm(u) }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "trash", s: 13 })))));
     })))));
+  }
+  function RecorrenciasPage({ txs, setTxs, fmt: fmt2, fmtDate: fmtDate2 }) {
+    const [confirm, setConfirm] = (0, import_react.useState)(null);
+    const FREQ_LABEL = { daily: "Di\xE1ria", weekly: "Semanal", monthly: "Mensal", yearly: "Anual" };
+    const TYPE_COLOR = { income: "green", expense: "red", transfer: "blue", card_expense: "purple" };
+    const TYPE_LABEL = { income: "Receita", expense: "Despesa", transfer: "Transfer\xEAncia", card_expense: "Cart\xE3o" };
+    const groups = (0, import_react.useMemo)(() => {
+      const map = {};
+      txs.filter((t) => t.recurring_id).forEach((t) => {
+        if (!map[t.recurring_id]) map[t.recurring_id] = [];
+        map[t.recurring_id].push(t);
+      });
+      return Object.entries(map).map(([rid, items]) => {
+        const sorted = [...items].sort((a, b) => a.date.localeCompare(b.date));
+        const first = sorted[0];
+        const last = sorted[sorted.length - 1];
+        const next = sorted.find((t) => t.date >= (/* @__PURE__ */ new Date()).toISOString().slice(0, 10));
+        return { rid, items: sorted, first, last, next, count: sorted.length };
+      }).sort((a, b) => {
+        var _a, _b;
+        return (((_a = a.next) == null ? void 0 : _a.date) || a.last.date).localeCompare(((_b = b.next) == null ? void 0 : _b.date) || b.last.date);
+      });
+    }, [txs]);
+    const deleteGroup = (rid) => {
+      setTxs((t) => t.filter((tr) => tr.recurring_id !== rid));
+      setConfirm(null);
+    };
+    const deleteFuture = (rid) => {
+      const today = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+      setTxs((t) => t.filter((tr) => tr.recurring_id !== rid || tr.date < today));
+      setConfirm(null);
+    };
+    return /* @__PURE__ */ import_react.default.createElement("div", null, confirm && /* @__PURE__ */ import_react.default.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1e3, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--surface)", borderRadius: 16, padding: 28, maxWidth: 380, width: "100%", border: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 8 } }, "Excluir recorr\xEAncia"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, color: "var(--text2)", marginBottom: 20 } }, "O que deseja excluir de ", /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--text)" } }, '"', confirm.first.description, '"'), "?"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } }, /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => deleteFuture(confirm.rid), style: { background: "var(--gold)", color: "#000", border: "none", borderRadius: 8, padding: "10px 16px", fontWeight: 700, cursor: "pointer", fontSize: 13 } }, "Excluir apenas as pr\xF3ximas ocorr\xEAncias"), /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => deleteGroup(confirm.rid), style: { background: "var(--red)", color: "#fff", border: "none", borderRadius: 8, padding: "10px 16px", fontWeight: 700, cursor: "pointer", fontSize: 13 } }, "Excluir todas (", confirm.count, " ocorr\xEAncias)"), /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => setConfirm(null), style: { background: "var(--surface2)", color: "var(--text2)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 16px", cursor: "pointer", fontSize: 13 } }, "Cancelar")))), /* @__PURE__ */ import_react.default.createElement("div", { className: "section-head" }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("h2", { style: { margin: 0, fontSize: 20, fontWeight: 700 } }, "Recorr\xEAncias"), /* @__PURE__ */ import_react.default.createElement("p", { style: { margin: "4px 0 0", fontSize: 13, color: "var(--text2)" } }, "Transa\xE7\xF5es autom\xE1ticas agendadas"))), groups.length === 0 ? /* @__PURE__ */ import_react.default.createElement("div", { style: { textAlign: "center", padding: "60px 20px", color: "var(--text3)" } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "repeat", s: 48, c: "var(--border2)" }), /* @__PURE__ */ import_react.default.createElement("div", { style: { marginTop: 16, fontSize: 15, fontWeight: 600, color: "var(--text2)" } }, "Nenhuma recorr\xEAncia cadastrada"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, marginTop: 6 } }, 'Ao criar uma transa\xE7\xE3o, ative "Transa\xE7\xE3o Recorrente" para ela aparecer aqui.')) : /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } }, groups.map((g) => {
+      const t = g.first;
+      const isActive = g.next !== void 0;
+      return /* @__PURE__ */ import_react.default.createElement("div", { key: g.rid, className: "card", style: { display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 44, height: 44, borderRadius: 12, background: `var(--${TYPE_COLOR[t.type]}-dim)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "repeat", s: 20, c: `var(--${TYPE_COLOR[t.type]})` })), /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontWeight: 700, fontSize: 14, color: "var(--text)" } }, t.description), /* @__PURE__ */ import_react.default.createElement(Badge, { color: TYPE_COLOR[t.type] }, TYPE_LABEL[t.type]), /* @__PURE__ */ import_react.default.createElement(Badge, { color: isActive ? "green" : "gray" }, isActive ? "Ativa" : "Encerrada")), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 16, marginTop: 4, flexWrap: "wrap" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--text)" } }, "Freq:"), " ", FREQ_LABEL[t.recurring_freq] || "Mensal"), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--text)" } }, "Ocorr\xEAncias:"), " ", g.count), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--text)" } }, "In\xEDcio:"), " ", fmtDate2(g.first.date)), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("strong", { style: { color: "var(--text)" } }, "Fim:"), " ", fmtDate2(g.last.date)), g.next && /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--gold)" } }, /* @__PURE__ */ import_react.default.createElement("strong", null, "Pr\xF3xima:"), " ", fmtDate2(g.next.date)))), /* @__PURE__ */ import_react.default.createElement("div", { style: { textAlign: "right", flexShrink: 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: t.type === "income" ? "var(--green)" : "var(--red)" } }, t.type === "income" ? "+" : "\u2212", fmt2(t.amount)), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text3)" } }, "por ocorr\xEAncia")), /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => setConfirm(g), style: { background: "var(--red-dim)", border: "none", borderRadius: 8, padding: "8px 12px", cursor: "pointer", color: "var(--red)", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, flexShrink: 0 } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "trash", s: 14, c: "var(--red)" }), " Excluir"));
+    })));
   }
   function SettingsPage({ tenant, user, dashWidgets, saveDashWidgets, notifs, saveNotifs }) {
     const [tab, setTab] = (0, import_react.useState)("preferencias");
