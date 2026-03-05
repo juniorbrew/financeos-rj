@@ -809,47 +809,73 @@ function Modal({ title, onClose, children, maxWidth = 520 }) {
   }, [onClose]);
   return /* @__PURE__ */ React.createElement("div", { className: "modal-overlay", onClick: (e) => e.target === e.currentTarget && onClose() }, /* @__PURE__ */ React.createElement("div", { className: "modal", style: { maxWidth } }, /* @__PURE__ */ React.createElement("div", { className: "modal-title" }, /* @__PURE__ */ React.createElement("span", null, title), /* @__PURE__ */ React.createElement("button", { className: "btn-icon btn", style: { padding: 6, minWidth: 0 }, onClick: onClose }, /* @__PURE__ */ React.createElement(Ic, { n: "close" }))), children));
 }
-function DashboardPage({ profile, accounts, txs, categories, cards, bills }) {
+function DashboardPage({ profile, accounts, txs, categories, cards, bills, budgets }) {
   var _a;
   const [period, setPeriod] = useState(thisMonth());
-  const monthTxs = useMemo(() => txs.filter((t) => {
-    var _a2;
-    return (_a2 = t.date) == null ? void 0 : _a2.startsWith(period);
-  }), [txs, period]);
+
+  // --- Derived data ---
+  const monthTxs = useMemo(() => txs.filter((t) => { var _a2; return (_a2 = t.date) == null ? void 0 : _a2.startsWith(period); }), [txs, period]);
+  const isCurrentMonth = period === thisMonth();
+
   const income = useMemo(() => monthTxs.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0), [monthTxs]);
-  const expense = useMemo(() => monthTxs.filter((t) => t.type === "expense" || t.type === "card_expense").reduce((s, t) => s + t.amount, 0), [monthTxs]);
-  const balance = useMemo(() => accounts.filter((a) => a.active && a.type !== "investment").reduce((s, a) => {
-    const b = txs.filter((t) => t.status === "paid").reduce((bal, t) => {
-      if (t.type === "income" && t.account_id === a.id) return bal + t.amount;
-      if (t.type === "expense" && t.account_id === a.id) return bal - t.amount;
-      if (t.type === "transfer_out" && t.account_id === a.id) return bal - t.amount;
-      if (t.type === "transfer_in" && t.account_id === a.id) return bal + t.amount;
-      if (t.type === "bill_payment" && t.account_id === a.id) return bal - t.amount;
-      return bal;
-    }, a.initial_balance);
-    return s + b;
-  }, 0), [accounts, txs]);
-  const openBills = useMemo(() => bills.filter((b) => b.status === "open").reduce((s, b) => s + b.amount, 0), [bills]);
+  const paidExpenses = useMemo(() => monthTxs.filter((t) => (t.type === "expense") && t.status === "paid").reduce((s, t) => s + t.amount, 0), [monthTxs]);
+  const totalExpense = useMemo(() => monthTxs.filter((t) => t.type === "expense" || t.type === "card_expense").reduce((s, t) => s + t.amount, 0), [monthTxs]);
+
+  // Widget 1: Saldo disponivel = receitas - despesas pagas - faturas abertas de cartao
+  const openCardBillsTotal = useMemo(() => {
+    if (!isCurrentMonth) return 0;
+    return bills.filter((b) => b.status === "open").reduce((s, b) => s + b.amount, 0);
+  }, [bills, isCurrentMonth]);
+  const availableBalance = useMemo(() => income - paidExpenses - openCardBillsTotal, [income, paidExpenses, openCardBillsTotal]);
+
+  // Widget 2: Last 6 months line chart data
   const last6 = useMemo(() => {
     const months = [];
     for (let i = 5; i >= 0; i--) {
-      const d = /* @__PURE__ */ new Date();
+      const d = new Date();
       d.setMonth(d.getMonth() - i);
       const ym = d.toISOString().slice(0, 7);
-      const mTxs = txs.filter((t) => {
-        var _a2;
-        return (_a2 = t.date) == null ? void 0 : _a2.startsWith(ym);
-      });
+      const mTxs = txs.filter((t) => { var _a2; return (_a2 = t.date) == null ? void 0 : _a2.startsWith(ym); });
       months.push({
         label: d.toLocaleDateString("pt-BR", { month: "short" }),
-        values: [
-          mTxs.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0),
-          mTxs.filter((t) => t.type === "expense" || t.type === "card_expense").reduce((s, t) => s + t.amount, 0)
-        ]
+        incomeVal: mTxs.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0),
+        expenseVal: mTxs.filter((t) => t.type === "expense" || t.type === "card_expense").reduce((s, t) => s + t.amount, 0),
       });
     }
     return months;
   }, [txs]);
+
+  // Widget 3: Card invoices - compute current bill for each card
+  const getInvoiceMonth = (cardObj, offset = 0) => {
+    const now = new Date();
+    const day = now.getDate();
+    const closeDay = (cardObj == null ? void 0 : cardObj.close_day) || 1;
+    let base = new Date(now.getFullYear(), now.getMonth(), 1);
+    if (day > closeDay) base = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    base.setMonth(base.getMonth() + offset);
+    return base.toISOString().slice(0, 7);
+  };
+  const cardInvoices = useMemo(() => cards.map((c) => {
+    const invMonth = getInvoiceMonth(c, 0);
+    const billTotal = txs.filter((t) => t.card_id === c.id && t.type === "card_expense" && (t.invoice_month === invMonth || (!t.invoice_month && (t.date || "").startsWith(invMonth)))).reduce((s, t) => s + t.amount, 0);
+    const available = c.credit_limit - billTotal;
+    const dueDay = c.due_day || 1;
+    const now = new Date();
+    const dueDate = new Date(now.getFullYear(), now.getMonth() + (now.getDate() > dueDay ? 1 : 0), dueDay);
+    const daysLeft = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+    return { ...c, billTotal, available, daysLeft, dueDate };
+  }), [cards, txs]);
+
+  // Widget 4: Budgets near limit
+  const budgetProgress = useMemo(() => {
+    return budgets.map((b) => {
+      const spent = monthTxs.filter((t) => t.category_id === b.category_id && (t.type === "expense" || t.type === "card_expense")).reduce((s, t) => s + t.amount, 0);
+      const pct = b.monthly_limit > 0 ? (spent / b.monthly_limit) * 100 : 0;
+      const cat = categories.find((c) => c.id === b.category_id);
+      return { ...b, spent, pct, cat };
+    }).sort((a, b2) => b2.pct - a.pct);
+  }, [budgets, monthTxs, categories]);
+
   const byCategory = useMemo(() => {
     const map = {};
     monthTxs.filter((t) => t.type === "expense" || t.type === "card_expense").forEach((t) => {
@@ -858,13 +884,324 @@ function DashboardPage({ profile, accounts, txs, categories, cards, bills }) {
     });
     return Object.entries(map).map(([id, v]) => ({ cat: categories.find((c) => c.id === id), value: v })).filter((x) => x.cat).sort((a, b) => b.value - a.value).slice(0, 6);
   }, [monthTxs, categories]);
+
   const recentTxs = useMemo(() => txs.slice(0, 8), [txs]);
-  return /* @__PURE__ */ React.createElement("div", { className: "fade-up" }, /* @__PURE__ */ React.createElement("div", { className: "page-header", style: { display: "flex", alignItems: "center", justifyContent: "space-between" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "page-title" }, "Dashboard"), /* @__PURE__ */ React.createElement("div", { className: "page-subtitle" }, "Ol\xE1, ", (_a = profile == null ? void 0 : profile.name) == null ? void 0 : _a.split(" ")[0], " \u{1F44B} \u2014 ", (/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }))), /* @__PURE__ */ React.createElement("input", { type: "month", className: "input", style: { width: "auto" }, value: period, onChange: (e) => setPeriod(e.target.value) })), /* @__PURE__ */ React.createElement("div", { className: "kpi-grid" }, /* @__PURE__ */ React.createElement("div", { className: "kpi-card" }, /* @__PURE__ */ React.createElement("div", { className: "kpi-icon", style: { background: "var(--accent-dim)" } }, /* @__PURE__ */ React.createElement(Ic, { n: "accounts", c: "var(--accent)", s: 18 })), /* @__PURE__ */ React.createElement("div", { className: "kpi-label" }, "Saldo Total"), /* @__PURE__ */ React.createElement("div", { className: `kpi-value ${balance >= 0 ? "green" : "red"}` }, fmt(balance)), /* @__PURE__ */ React.createElement("div", { className: "kpi-delta neutral" }, /* @__PURE__ */ React.createElement(Ic, { n: "accounts", s: 12 }), "Contas ativas")), /* @__PURE__ */ React.createElement("div", { className: "kpi-card" }, /* @__PURE__ */ React.createElement("div", { className: "kpi-icon", style: { background: "var(--green-dim)" } }, /* @__PURE__ */ React.createElement(Ic, { n: "arrow_up", c: "var(--green)", s: 18 })), /* @__PURE__ */ React.createElement("div", { className: "kpi-label" }, "Receitas do m\xEAs"), /* @__PURE__ */ React.createElement("div", { className: "kpi-value green" }, fmt(income)), /* @__PURE__ */ React.createElement("div", { className: "kpi-delta up" }, /* @__PURE__ */ React.createElement(Ic, { n: "arrow_up", s: 12 }), monthTxs.filter((t) => t.type === "income").length, " transa\xE7\xF5es")), /* @__PURE__ */ React.createElement("div", { className: "kpi-card" }, /* @__PURE__ */ React.createElement("div", { className: "kpi-icon", style: { background: "var(--red-dim)" } }, /* @__PURE__ */ React.createElement(Ic, { n: "arrow_dn", c: "var(--red)", s: 18 })), /* @__PURE__ */ React.createElement("div", { className: "kpi-label" }, "Despesas do m\xEAs"), /* @__PURE__ */ React.createElement("div", { className: "kpi-value red" }, fmt(expense)), /* @__PURE__ */ React.createElement("div", { className: "kpi-delta down" }, /* @__PURE__ */ React.createElement(Ic, { n: "arrow_dn", s: 12 }), monthTxs.filter((t) => t.type === "expense" || t.type === "card_expense").length, " transa\xE7\xF5es")), /* @__PURE__ */ React.createElement("div", { className: "kpi-card" }, /* @__PURE__ */ React.createElement("div", { className: "kpi-icon", style: { background: "var(--yellow-dim)" } }, /* @__PURE__ */ React.createElement(Ic, { n: "cards", c: "var(--yellow)", s: 18 })), /* @__PURE__ */ React.createElement("div", { className: "kpi-label" }, "Faturas abertas"), /* @__PURE__ */ React.createElement("div", { className: `kpi-value ${openBills > 0 ? "red" : ""}` }, fmt(openBills)), /* @__PURE__ */ React.createElement("div", { className: "kpi-delta neutral" }, /* @__PURE__ */ React.createElement(Ic, { n: "cards", s: 12 }), bills.filter((b) => b.status === "open").length, " faturas"))), /* @__PURE__ */ React.createElement("div", { className: "grid-60-40", style: { marginBottom: 16 } }, /* @__PURE__ */ React.createElement("div", { className: "card" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "card-title" }, "Fluxo dos \xFAltimos 6 meses")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 12, fontSize: 11, color: "var(--text3)" } }, /* @__PURE__ */ React.createElement("span", { style: { display: "flex", alignItems: "center", gap: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { width: 8, height: 8, borderRadius: 2, background: "var(--green)", display: "inline-block" } }), "Receitas"), /* @__PURE__ */ React.createElement("span", { style: { display: "flex", alignItems: "center", gap: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { width: 8, height: 8, borderRadius: 2, background: "var(--red)", display: "inline-block" } }), "Despesas"))), /* @__PURE__ */ React.createElement(BarChart, { data: last6, colors: ["var(--green)", "var(--red)"], height: 180 })), /* @__PURE__ */ React.createElement("div", { className: "card" }, /* @__PURE__ */ React.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "Gastos por categoria"), byCategory.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "empty", style: { padding: 24 } }, /* @__PURE__ */ React.createElement("div", { className: "empty-icon" }, "\u{1F4CA}"), /* @__PURE__ */ React.createElement("div", { className: "empty-sub" }, "Nenhuma despesa este m\xEAs")) : byCategory.map(({ cat, value }) => /* @__PURE__ */ React.createElement("div", { key: cat.id, style: { marginBottom: 12 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 } }, /* @__PURE__ */ React.createElement("span", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 13 } }, /* @__PURE__ */ React.createElement("span", null, cat.icon), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--text2)" } }, cat.name)), /* @__PURE__ */ React.createElement("span", { style: { fontFamily: "var(--mono)", fontSize: 12, fontWeight: 600, color: "var(--text)" } }, fmt(value))), /* @__PURE__ */ React.createElement("div", { className: "progress" }, /* @__PURE__ */ React.createElement("div", { className: "progress-bar", style: { width: `${Math.min(value / expense * 100, 100)}%`, background: cat.color } })))))), /* @__PURE__ */ React.createElement("div", { className: "card" }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 } }, /* @__PURE__ */ React.createElement("div", { className: "card-title", style: { marginBottom: 0 } }, "\xDAltimas transa\xE7\xF5es")), recentTxs.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "empty" }, /* @__PURE__ */ React.createElement("div", { className: "empty-icon" }, "\u{1F4B8}"), /* @__PURE__ */ React.createElement("div", { className: "empty-title" }, "Nenhuma transa\xE7\xE3o ainda"), /* @__PURE__ */ React.createElement("div", { className: "empty-sub" }, "Adicione sua primeira transa\xE7\xE3o para come\xE7ar")) : /* @__PURE__ */ React.createElement("div", { className: "table-wrap" }, /* @__PURE__ */ React.createElement("table", null, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Descri\xE7\xE3o"), /* @__PURE__ */ React.createElement("th", null, "Categoria"), /* @__PURE__ */ React.createElement("th", null, "Data"), /* @__PURE__ */ React.createElement("th", null, "Status"), /* @__PURE__ */ React.createElement("th", { style: { textAlign: "right" } }, "Valor"))), /* @__PURE__ */ React.createElement("tbody", null, recentTxs.map((t) => {
-    const cat = categories.find((c) => c.id === t.category_id);
-    const isPos = t.type === "income" || t.type === "transfer_in";
-    const isNeg = t.type === "expense" || t.type === "card_expense" || t.type === "transfer_out" || t.type === "bill_payment";
-    return /* @__PURE__ */ React.createElement("tr", { key: t.id }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 500 } }, t.description)), /* @__PURE__ */ React.createElement("td", null, cat ? /* @__PURE__ */ React.createElement("span", { style: { display: "flex", alignItems: "center", gap: 6 } }, /* @__PURE__ */ React.createElement("span", null, cat.icon), /* @__PURE__ */ React.createElement("span", { style: { color: "var(--text2)", fontSize: 12 } }, cat.name)) : /* @__PURE__ */ React.createElement("span", { style: { color: "var(--text3)" } }, "\u2014")), /* @__PURE__ */ React.createElement("td", { style: { color: "var(--text2)", fontSize: 12 } }, fmtDate(t.date)), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("span", { className: `badge ${t.status === "paid" ? "badge-green" : "badge-yellow"}` }, t.status === "paid" ? "Pago" : "Pendente")), /* @__PURE__ */ React.createElement("td", { className: "td-mono", style: { textAlign: "right" } }, /* @__PURE__ */ React.createElement("span", { className: isPos ? "amount-pos" : isNeg ? "amount-neg" : "" }, isPos ? "+" : isNeg ? "\u2212" : "", fmt(t.amount))));
-  }))))));
+
+  // --- Line chart canvas component for widget 2 ---
+  const DualLineChart = ({ data, height = 200 }) => {
+    const canvasRef = useRef(null);
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas || !(data == null ? void 0 : data.length)) return;
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.offsetWidth;
+      const h = height;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+      const padL = 8, padR = 8, padT = 16, padB = 28;
+      const cw = w - padL - padR, ch = h - padT - padB;
+      const allVals = data.flatMap((d) => [d.incomeVal, d.expenseVal]);
+      const maxV = Math.max(...allVals, 1);
+      const n = data.length;
+      const xOf = (i) => padL + (i / (n - 1)) * cw;
+      const yOf = (v) => padT + (1 - v / maxV) * ch;
+
+      // grid lines
+      ctx.strokeStyle = "rgba(255,255,255,0.05)";
+      ctx.lineWidth = 1;
+      [0.25, 0.5, 0.75, 1].forEach((f) => {
+        const y = padT + (1 - f) * ch;
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + cw, y); ctx.stroke();
+      });
+
+      // draw area + line helper
+      const drawLine = (vals, color) => {
+        const pts = vals.map((v, i) => ({ x: xOf(i), y: yOf(v) }));
+        // area
+        const grad = ctx.createLinearGradient(0, padT, 0, padT + ch);
+        grad.addColorStop(0, color + "30"); grad.addColorStop(1, color + "00");
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, padT + ch);
+        pts.forEach((p) => ctx.lineTo(p.x, p.y));
+        ctx.lineTo(pts[pts.length - 1].x, padT + ch);
+        ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+        // line
+        ctx.beginPath();
+        pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+        ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.lineJoin = "round"; ctx.stroke();
+        // dots
+        pts.forEach((p) => {
+          ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+          ctx.fillStyle = color; ctx.fill();
+          ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = "#0d1117"; ctx.fill();
+        });
+      };
+
+      drawLine(data.map((d) => d.incomeVal), "#10b981");
+      drawLine(data.map((d) => d.expenseVal), "#ef4444");
+
+      // x labels
+      ctx.fillStyle = "rgba(148,163,184,0.7)";
+      ctx.font = "10px DM Sans, sans-serif";
+      ctx.textAlign = "center";
+      data.forEach((d, i) => ctx.fillText(d.label, xOf(i), h - 8));
+    }, [data, height]);
+    return React.createElement("canvas", { ref: canvasRef, style: { width: "100%", height } });
+  };
+
+  return React.createElement("div", { className: "fade-up" },
+    // Header
+    React.createElement("div", { className: "page-header", style: { display: "flex", alignItems: "center", justifyContent: "space-between" } },
+      React.createElement("div", null,
+        React.createElement("div", { className: "page-title" }, "Dashboard"),
+        React.createElement("div", { className: "page-subtitle" }, "Ol\xE1, ", (_a = profile == null ? void 0 : profile.name) == null ? void 0 : _a.split(" ")[0], " \u{1F44B} \u2014 ", (new Date()).toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }))
+      ),
+      React.createElement("input", { type: "month", className: "input", style: { width: "auto" }, value: period, onChange: (e) => setPeriod(e.target.value) })
+    ),
+
+    // ── WIDGET 1: Saldo Disponível do Mês (destaque) ──
+    React.createElement("div", {
+      style: {
+        background: "linear-gradient(135deg, var(--surface) 0%, rgba(124,58,237,0.12) 100%)",
+        border: "1px solid rgba(124,58,237,0.3)",
+        borderRadius: "var(--radius-lg)",
+        padding: "24px 28px",
+        marginBottom: 20,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: 20,
+        position: "relative",
+        overflow: "hidden"
+      }
+    },
+      React.createElement("div", { style: { position: "absolute", right: -20, top: -20, width: 140, height: 140, borderRadius: "50%", background: "rgba(124,58,237,0.07)" } }),
+      React.createElement("div", null,
+        React.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 } }, "\u{1F4B0} Saldo Dispon\xEDvel do M\xEAs"),
+        React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 38, fontWeight: 700, letterSpacing: "-1px", color: availableBalance >= 0 ? "var(--green)" : "var(--red)", lineHeight: 1 } },
+          fmt(availableBalance)
+        ),
+        React.createElement("div", { style: { fontSize: 12, color: "var(--text3)", marginTop: 8 } },
+          "Receitas \u2212 despesas pagas \u2212 faturas comprometidas"
+        )
+      ),
+      React.createElement("div", { style: { display: "flex", gap: 24, flexWrap: "wrap" } },
+        React.createElement("div", { style: { textAlign: "center" } },
+          React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 } }, "Receitas"),
+          React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 18, fontWeight: 700, color: "var(--green)" } }, fmt(income))
+        ),
+        React.createElement("div", { style: { width: 1, background: "var(--border)", alignSelf: "stretch" } }),
+        React.createElement("div", { style: { textAlign: "center" } },
+          React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 } }, "Despesas pagas"),
+          React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 18, fontWeight: 700, color: "var(--red)" } }, fmt(paidExpenses))
+        ),
+        React.createElement("div", { style: { width: 1, background: "var(--border)", alignSelf: "stretch" } }),
+        React.createElement("div", { style: { textAlign: "center" } },
+          React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 } }, "Faturas cartão"),
+          React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 18, fontWeight: 700, color: openCardBillsTotal > 0 ? "var(--yellow)" : "var(--text3)" } }, fmt(openCardBillsTotal))
+        )
+      )
+    ),
+
+    // ── WIDGET 2 + categoria ──
+    React.createElement("div", { className: "grid-60-40", style: { marginBottom: 16 } },
+      // Widget 2: Gráfico evolução financeira (line chart)
+      React.createElement("div", { className: "card" },
+        React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 } },
+          React.createElement("div", { className: "card-title", style: { marginBottom: 0 } }, "Evolu\xE7\xE3o financeira \u2014 \xFAltimos 6 meses"),
+          React.createElement("div", { style: { display: "flex", gap: 14, fontSize: 11, color: "var(--text3)" } },
+            React.createElement("span", { style: { display: "flex", alignItems: "center", gap: 5 } },
+              React.createElement("span", { style: { width: 10, height: 3, borderRadius: 2, background: "var(--green)", display: "inline-block" } }),
+              "Receitas"
+            ),
+            React.createElement("span", { style: { display: "flex", alignItems: "center", gap: 5 } },
+              React.createElement("span", { style: { width: 10, height: 3, borderRadius: 2, background: "var(--red)", display: "inline-block" } }),
+              "Despesas"
+            )
+          )
+        ),
+        React.createElement(DualLineChart, { data: last6, height: 200 }),
+        // summary row
+        React.createElement("div", { style: { display: "flex", gap: 0, marginTop: 14, borderTop: "1px solid var(--border)", paddingTop: 14 } },
+          last6.map((m, i) =>
+            React.createElement("div", { key: i, style: { flex: 1, textAlign: "center" } },
+              React.createElement("div", { style: { fontSize: 10, color: "var(--text3)", marginBottom: 3 } }, m.label),
+              React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 10, fontWeight: 700, color: m.incomeVal >= m.expenseVal ? "var(--green)" : "var(--red)" } },
+                m.incomeVal >= m.expenseVal ? "+" : "-", fmt(Math.abs(m.incomeVal - m.expenseVal))
+              )
+            )
+          )
+        )
+      ),
+      // Gastos por categoria
+      React.createElement("div", { className: "card" },
+        React.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "Gastos por categoria"),
+        byCategory.length === 0
+          ? React.createElement("div", { className: "empty", style: { padding: 24 } }, React.createElement("div", { className: "empty-icon" }, "\u{1F4CA}"), React.createElement("div", { className: "empty-sub" }, "Nenhuma despesa este m\xEAs"))
+          : byCategory.map(({ cat, value }) =>
+              React.createElement("div", { key: cat.id, style: { marginBottom: 12 } },
+                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 } },
+                  React.createElement("span", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 13 } },
+                    React.createElement("span", null, cat.icon),
+                    React.createElement("span", { style: { color: "var(--text2)" } }, cat.name)
+                  ),
+                  React.createElement("span", { style: { fontFamily: "var(--mono)", fontSize: 12, fontWeight: 600, color: "var(--text)" } }, fmt(value))
+                ),
+                React.createElement("div", { className: "progress" },
+                  React.createElement("div", { className: "progress-bar", style: { width: `${Math.min(value / (totalExpense || 1) * 100, 100)}%`, background: cat.color } })
+                )
+              )
+            )
+      )
+    ),
+
+    // ── WIDGET 3 + WIDGET 4 side by side ──
+    React.createElement("div", { className: "grid-2", style: { marginBottom: 16 } },
+
+      // Widget 3: Próximas faturas de cartão
+      React.createElement("div", { className: "card" },
+        React.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "\u{1F4B3} Pr\xF3ximas faturas de cart\xE3o"),
+        cardInvoices.length === 0
+          ? React.createElement("div", { className: "empty", style: { padding: "20px 0" } },
+              React.createElement("div", { className: "empty-icon" }, "\u{1F4B3}"),
+              React.createElement("div", { className: "empty-sub" }, "Nenhum cart\xE3o cadastrado")
+            )
+          : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+              cardInvoices.map((c) => {
+                const usePct = c.credit_limit > 0 ? (c.billTotal / c.credit_limit) * 100 : 0;
+                const isUrgent = c.daysLeft <= 5;
+                const barColor = usePct > 80 ? "var(--red)" : usePct > 60 ? "var(--yellow)" : c.color || "var(--accent)";
+                return React.createElement("div", {
+                  key: c.id,
+                  style: { padding: "14px 16px", background: "var(--surface2)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }
+                },
+                  React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 } },
+                    React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
+                      React.createElement("div", { style: { width: 10, height: 10, borderRadius: 3, background: c.color || "var(--accent)", flexShrink: 0 } }),
+                      React.createElement("span", { style: { fontWeight: 700, fontSize: 13 } }, c.name),
+                      c.bank && React.createElement("span", { style: { fontSize: 11, color: "var(--text3)" } }, c.bank)
+                    ),
+                    React.createElement("span", {
+                      className: `badge ${isUrgent ? "badge-red" : "badge-yellow"}`,
+                      style: { fontSize: 10 }
+                    }, "Vence dia ", c.due_day, isUrgent ? " \u26A0\uFE0F" : "")
+                  ),
+                  React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 10 } },
+                    React.createElement("div", null,
+                      React.createElement("div", { style: { fontSize: 10, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 } }, "Fatura atual"),
+                      React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 16, fontWeight: 700, color: "var(--red)" } }, fmt(c.billTotal))
+                    ),
+                    React.createElement("div", { style: { textAlign: "right" } },
+                      React.createElement("div", { style: { fontSize: 10, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 } }, "Dispon\xEDvel"),
+                      React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 16, fontWeight: 700, color: c.available < 0 ? "var(--red)" : "var(--green)" } }, fmt(Math.max(c.available, 0)))
+                    )
+                  ),
+                  React.createElement("div", { className: "progress" },
+                    React.createElement("div", { className: "progress-bar", style: { width: `${Math.min(usePct, 100)}%`, background: barColor, transition: "width 0.4s" } })
+                  ),
+                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text3)", marginTop: 4 } },
+                    React.createElement("span", null, "Limite: ", fmt(c.credit_limit)),
+                    React.createElement("span", null, usePct.toFixed(0), "% utilizado")
+                  )
+                );
+              })
+            )
+      ),
+
+      // Widget 4: Orçamentos próximos do limite
+      React.createElement("div", { className: "card" },
+        React.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "\u{1F3AF} Or\xE7amentos pr\xF3ximos do limite"),
+        budgetProgress.length === 0
+          ? React.createElement("div", { className: "empty", style: { padding: "20px 0" } },
+              React.createElement("div", { className: "empty-icon" }, "\u{1F4B0}"),
+              React.createElement("div", { className: "empty-sub" }, "Nenhum or\xE7amento configurado")
+            )
+          : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } },
+              budgetProgress.map((b) => {
+                const barColor = b.pct >= 100 ? "var(--red)" : b.pct >= 80 ? "var(--yellow)" : "var(--green)";
+                const badgeCls = b.pct >= 100 ? "badge-red" : b.pct >= 80 ? "badge-yellow" : "badge-green";
+                const badgeLabel = b.pct >= 100 ? "Estourado" : b.pct >= 80 ? "Aten\xE7\xE3o" : "OK";
+                return React.createElement("div", { key: b.id },
+                  React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 } },
+                    React.createElement("span", { style: { display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600 } },
+                      React.createElement("span", { style: { fontSize: 16 } }, (b.cat == null ? void 0 : b.cat.icon) || "\u{1F4E6}"),
+                      (b.cat == null ? void 0 : b.cat.name) || "Categoria"
+                    ),
+                    React.createElement("span", { className: `badge ${badgeCls}` }, badgeLabel)
+                  ),
+                  React.createElement("div", { className: "progress", style: { marginBottom: 5 } },
+                    React.createElement("div", { className: "progress-bar", style: { width: `${Math.min(b.pct, 100)}%`, background: barColor, transition: "width 0.4s" } })
+                  ),
+                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text3)" } },
+                    React.createElement("span", null,
+                      React.createElement("span", { style: { fontFamily: "var(--mono)", fontWeight: 700, color: b.pct >= 100 ? "var(--red)" : "var(--text)" } }, fmt(b.spent)),
+                      React.createElement("span", null, " / ", fmt(b.monthly_limit))
+                    ),
+                    React.createElement("span", { style: { fontFamily: "var(--mono)", fontWeight: 700, color: barColor } }, b.pct.toFixed(0), "%")
+                  )
+                );
+              })
+            )
+      )
+    ),
+
+    // Últimas transações
+    React.createElement("div", { className: "card" },
+      React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 } },
+        React.createElement("div", { className: "card-title", style: { marginBottom: 0 } }, "\xDAltimas transa\xE7\xF5es")
+      ),
+      recentTxs.length === 0
+        ? React.createElement("div", { className: "empty" },
+            React.createElement("div", { className: "empty-icon" }, "\u{1F4B8}"),
+            React.createElement("div", { className: "empty-title" }, "Nenhuma transa\xE7\xE3o ainda"),
+            React.createElement("div", { className: "empty-sub" }, "Adicione sua primeira transa\xE7\xE3o para come\xE7ar")
+          )
+        : React.createElement("div", { className: "table-wrap" },
+            React.createElement("table", null,
+              React.createElement("thead", null,
+                React.createElement("tr", null,
+                  React.createElement("th", null, "Descri\xE7\xE3o"),
+                  React.createElement("th", null, "Categoria"),
+                  React.createElement("th", null, "Data"),
+                  React.createElement("th", null, "Status"),
+                  React.createElement("th", { style: { textAlign: "right" } }, "Valor")
+                )
+              ),
+              React.createElement("tbody", null,
+                recentTxs.map((t) => {
+                  const cat = categories.find((c) => c.id === t.category_id);
+                  const isPos = t.type === "income" || t.type === "transfer_in";
+                  const isNeg = t.type === "expense" || t.type === "card_expense" || t.type === "transfer_out" || t.type === "bill_payment";
+                  return React.createElement("tr", { key: t.id },
+                    React.createElement("td", null, React.createElement("span", { style: { fontWeight: 500 } }, t.description)),
+                    React.createElement("td", null, cat
+                      ? React.createElement("span", { style: { display: "flex", alignItems: "center", gap: 6 } },
+                          React.createElement("span", null, cat.icon),
+                          React.createElement("span", { style: { color: "var(--text2)", fontSize: 12 } }, cat.name)
+                        )
+                      : React.createElement("span", { style: { color: "var(--text3)" } }, "\u2014")
+                    ),
+                    React.createElement("td", { style: { color: "var(--text2)", fontSize: 12 } }, fmtDate(t.date)),
+                    React.createElement("td", null,
+                      React.createElement("span", { className: `badge ${t.status === "paid" ? "badge-green" : "badge-yellow"}` }, t.status === "paid" ? "Pago" : "Pendente")
+                    ),
+                    React.createElement("td", { className: "td-mono", style: { textAlign: "right" } },
+                      React.createElement("span", { className: isPos ? "amount-pos" : isNeg ? "amount-neg" : "" },
+                        isPos ? "+" : isNeg ? "\u2212" : "", fmt(t.amount)
+                      )
+                    )
+                  );
+                })
+              )
+            )
+          )
+    )
+  );
 }
 function AccountsPage({ profile, accounts, txs, onAdd, onEdit, onDelete }) {
   const computeBalance = useCallback((acc) => {
