@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-034942 -->
+<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-115305 -->
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/><title>FinanceOS</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f0b429'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='serif' fill='%23000'>F</text></svg>"/>
@@ -1179,7 +1179,7 @@
   /* CARDS */
   .card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 24px;
+    border-radius: var(--radius); padding: 24px 28px;
   }
   .card-title { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: var(--ls-widest); margin-bottom: 20px; }
 
@@ -1209,28 +1209,27 @@
 
   /* HERO KPI */
   .kpi-hero {
-    display: grid; grid-template-columns: 1fr auto;
+    display: grid; grid-template-columns: 1fr minmax(340px, 420px);
     background: var(--surface); border: 1px solid var(--border);
     border-left: 4px solid var(--gold); border-radius: var(--radius);
     overflow: hidden;
   }
   .kpi-hero-main {
-    padding: 28px 32px; border-right: 1px solid var(--border);
+    padding: 32px 36px; border-right: 1px solid var(--border);
   }
   .kpi-hero-label {
     font-size: 10px; font-weight: 700; color: var(--text3);
-    text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 14px;
   }
   .kpi-hero-value {
     font-family: var(--font-mono); font-size: 44px; font-weight: 700;
     letter-spacing: -0.03em; color: var(--gold); line-height: 1; margin-bottom: 8px;
   }
-  .kpi-hero-sub { font-size: 13px; color: var(--text2); }
+  .kpi-hero-sub { font-size: 13px; color: var(--text2); margin-top: 8px; }
   .kpi-hero-satellites {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: var(--border); width: 380px;
-  }
-  .kpi-sat { padding: 20px 24px; background: var(--surface); }
+    gap: 1px; background: var(--border);   }
+  .kpi-sat { padding: 22px 26px; background: var(--surface); }
   .kpi-sat-label {
     font-size: 10px; font-weight: 700; color: var(--text3);
     text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
@@ -1263,17 +1262,17 @@
   }
 
   /* DASH ZONE \u2014 spacing between dashboard sections */
-  .dash-zone { margin-bottom: 28px; }
+  .dash-zone { margin-bottom: 32px; }
 
   /* UPDATED GRIDS */
-  .grid-60-40 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; }
-  .grid-65-35-dash { display: grid; grid-template-columns: 1.85fr 1fr; gap: 20px; }
+  .grid-60-40 { display: grid; grid-template-columns: 3fr 2fr; gap: 22px; }
+  .grid-65-35-dash { display: grid; grid-template-columns: 1.85fr 1fr; gap: 22px; }
 
   /* GRID LAYOUTS */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
   .grid-65-35 { display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; }
-  .grid-35-65 { display: grid; grid-template-columns: 1fr 1.8fr; gap: 20px; }
+  .grid-35-65 { display: grid; grid-template-columns: 2fr 3fr; gap: 22px; }
   .auto-grid-260 { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
   .auto-grid-280 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
   .auto-grid-320 { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
@@ -4317,7 +4316,7 @@ ${catInfo}`);
     }, [curr, prev, txs, bgs, goals, bills, ccs, cats, totalLiquid, saving]);
     const { insights, hasUrgent } = intelligence;
     const panelOpen = intelOpen !== null ? intelOpen : hasUrgent;
-    return /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 0 } }, show("saldo_total") && /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero dash-zone" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero-main" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero-label" }, "Patrim\xF4nio Total"), /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero-value" }, fmt2(totalAssets)), /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero-sub" }, "L\xEDquido: ", fmt2(totalLiquid))), /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero-satellites" }, [
+    return /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 0 } }, show("saldo_total") && /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero dash-zone" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero-main" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero-label" }, "Saldo Atual"), /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero-value" }, fmt2(totalLiquid)), /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero-sub" }, "Patrim\xF4nio: ", fmt2(totalAssets))), /* @__PURE__ */ import_react.default.createElement("div", { className: "kpi-hero-satellites" }, [
       { label: "Receitas do M\xEAs", value: fmt2(curr.income), color: "var(--green)", delta: incomeDelta ? `${incomeDelta.sign}${incomeDelta.pct}% vs anterior` : "" },
       { label: "Sa\xEDdas do M\xEAs", value: fmt2(curr.total), color: "var(--red)", delta: expDelta ? `${expDelta.sign}${expDelta.pct}% vs anterior` : "" },
       { label: "Economia do M\xEAs", value: fmt2(saving), color: saving >= 0 ? "var(--green)" : "var(--red)", delta: curr.income > 0 ? `${(saving / curr.income * 100).toFixed(0)}% da receita` : "" },
@@ -4359,7 +4358,7 @@ ${catInfo}`);
         borderRadius: 99,
         transition: "width 0.6s cubic-bezier(0.34,1.56,0.64,1)"
       } })));
-    }))), show("fluxo_mensal") && /* @__PURE__ */ import_react.default.createElement("div", { className: "grid-60-40 dash-zone" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "section-label" }, /* @__PURE__ */ import_react.default.createElement("span", null, "Receitas \xD7 Despesas \u2014 6 meses"), /* @__PURE__ */ import_react.default.createElement("div", { className: "cf-legend" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "cf-dot", style: { background: "var(--green)" } }), "Receitas"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "cf-dot", style: { background: "var(--red)" } }), "Despesas"))), /* @__PURE__ */ import_react.default.createElement(StackedBarChart, { data: months6, height: 140 })), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "section-label" }, "Saldo L\xEDquido \u2014 14 dias"), /* @__PURE__ */ import_react.default.createElement("div", { style: { color: "var(--text2)", fontSize: 11, marginBottom: 12 } }, "Evolu\xE7\xE3o recente"), /* @__PURE__ */ import_react.default.createElement(Sparkline, { data: sparkData, color: "var(--green)", width: "100%", height: 90 }), /* @__PURE__ */ import_react.default.createElement("div", { style: { marginTop: 16, padding: "14px 16px", background: saving >= 0 ? "var(--green-dim)" : "var(--red-dim)", borderRadius: 10 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text2)", marginBottom: 3 } }, "Fluxo do m\xEAs"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 700, color: saving >= 0 ? "var(--green)" : "var(--red)" } }, saving >= 0 ? "+" : "", fmt2(saving))))), show("graficos") && /* @__PURE__ */ import_react.default.createElement("div", { className: "grid-35-65 dash-zone" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "section-label" }, "Saldo por Conta"), accs.filter((a) => a.active).map((a) => {
+    }))), show("fluxo_mensal") && /* @__PURE__ */ import_react.default.createElement("div", { className: "grid-60-40 dash-zone" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "section-label" }, /* @__PURE__ */ import_react.default.createElement("span", null, "Receitas \xD7 Despesas \u2014 6 meses"), /* @__PURE__ */ import_react.default.createElement("div", { className: "cf-legend" }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "cf-dot", style: { background: "var(--green)" } }), "Receitas"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--text2)" } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "cf-dot", style: { background: "var(--red)" } }), "Despesas"))), /* @__PURE__ */ import_react.default.createElement(StackedBarChart, { data: months6, height: 160 })), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "section-label" }, "Saldo L\xEDquido \u2014 14 dias"), /* @__PURE__ */ import_react.default.createElement("div", { style: { color: "var(--text2)", fontSize: 11, marginBottom: 12 } }, "Evolu\xE7\xE3o recente"), /* @__PURE__ */ import_react.default.createElement(Sparkline, { data: sparkData, color: "var(--green)", width: "100%", height: 100 }), /* @__PURE__ */ import_react.default.createElement("div", { style: { marginTop: 16, padding: "14px 16px", background: saving >= 0 ? "var(--green-dim)" : "var(--red-dim)", borderRadius: 10 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text2)", marginBottom: 3 } }, "Fluxo do m\xEAs"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 20, fontWeight: 700, color: saving >= 0 ? "var(--green)" : "var(--red)" } }, saving >= 0 ? "+" : "", fmt2(saving))))), show("graficos") && /* @__PURE__ */ import_react.default.createElement("div", { className: "grid-35-65 dash-zone" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "section-label" }, "Saldo por Conta"), accs.filter((a) => a.active).map((a) => {
       const bal = computeBalance(a.id);
       const typeLabel = { checking: "Corrente", savings: "Poupan\xE7a", cash: "Dinheiro", investment: "Investimento" };
       return /* @__PURE__ */ import_react.default.createElement("div", { key: a.id, className: "metric-row" }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, fontWeight: 600 } }, a.name), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text2)" } }, a.bank_name || typeLabel[a.type])), /* @__PURE__ */ import_react.default.createElement("div", { style: { textAlign: "right" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 600, color: bal < 0 ? "var(--red)" : "var(--text)" } }, fmt2(bal)), /* @__PURE__ */ import_react.default.createElement(Sparkline, { data: [bal * 0.9, bal * 0.92, bal * 0.95, bal * 0.98, bal], color: bal < 0 ? "var(--red)" : "var(--green)", width: 60, height: 20 })));
