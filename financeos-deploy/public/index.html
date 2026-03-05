@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-143012 -->
+<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-162645 -->
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/><title>FinanceOS</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f0b429'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='serif' fill='%23000'>F</text></svg>"/>
@@ -944,6 +944,7 @@
 <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;"><div style="width:40px;height:40px;border:3px solid #f0b429;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div><div style="color:#f0b429;font-size:14px;letter-spacing:0.1em;font-family:sans-serif;">CARREGANDO...</div></div></div>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>var{useState,useEffect,useMemo,useCallback,useRef}=React;</script>
 <script>var __require=(id)=>{if(id==="react")return React;if(id==="react-dom/client")return ReactDOM;return{};};(() => {
   var __create = Object.create;
@@ -995,40 +996,97 @@
   // tmp/app.tsx
   var import_react={default:React,useState,useEffect,useMemo,useCallback,useRef};
   var import_client={default:ReactDOM};
+  var SUPA_URL = "https://defgyitlwajworjdbqlz.supabase.co";
+  var SUPA_KEY = "sb_publishable_FZ0acKJWiD8mKMgJe-141Q_r26BEfmO";
+  var getSupa = () => {
+    if (typeof window !== "undefined" && window.supabase) {
+      if (!getSupa._client) {
+        getSupa._client = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
+          auth: { persistSession: true, storageKey: "fos-supa-session" }
+        });
+      }
+      return getSupa._client;
+    }
+    return null;
+  };
   var API = {
-    base: "/api",
-    async post(path, body) {
-      const res = await fetch(API.base + path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      return res.json();
-    },
-    async get(path) {
-      const res = await fetch(API.base + path);
-      return res.json();
-    },
     async register({ name, email, password, tenant }) {
-      return API.post("/auth", { action: "register", name, email, password, tenant });
+      var _a;
+      const supa = getSupa();
+      if (!supa) return { error: "Supabase n\xE3o dispon\xEDvel" };
+      const { data: authData, error: authErr } = await supa.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: { data: { name, tenant } }
+      });
+      if (authErr) return { error: authErr.message };
+      const userId = (_a = authData.user) == null ? void 0 : _a.id;
+      if (!userId) return { error: "Erro ao criar conta" };
+      const initData = createUserData(false);
+      initData._meta = { name, tenant, plan: "free" };
+      await supa.from("user_data").upsert(
+        { user_id: userId, data: initData, updated_at: (/* @__PURE__ */ new Date()).toISOString() },
+        { onConflict: "user_id" }
+      );
+      return { user: { id: userId, name, email, tenant, plan: "free" }, data: initData };
     },
     async login({ email, password }) {
-      return API.post("/auth", { action: "login", email, password });
+      var _a, _b, _c, _d, _e, _f;
+      const supa = getSupa();
+      if (!supa) return { error: "Supabase n\xE3o dispon\xEDvel" };
+      const { data: authData, error: authErr } = await supa.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password
+      });
+      if (authErr) return { error: "Email ou senha incorretos" };
+      const userId = (_a = authData.user) == null ? void 0 : _a.id;
+      const { data: row } = await supa.from("user_data").select("data").eq("user_id", userId).single();
+      const stored = (row == null ? void 0 : row.data) || {};
+      const userData = stored && Object.keys(stored).length > 0 && stored.accs !== void 0 ? stored : createUserData(false);
+      const meta = userData._meta || {};
+      return {
+        user: {
+          id: userId,
+          name: meta.name || ((_c = (_b = authData.user) == null ? void 0 : _b.user_metadata) == null ? void 0 : _c.name) || email.split("@")[0],
+          email: (_d = authData.user) == null ? void 0 : _d.email,
+          tenant: meta.tenant || ((_f = (_e = authData.user) == null ? void 0 : _e.user_metadata) == null ? void 0 : _f.tenant) || "Minha Empresa",
+          plan: meta.plan || "free"
+        },
+        data: userData
+      };
     },
     async saveData(userId, data) {
-      return API.post("/save-data", { userId, data });
+      const supa = getSupa();
+      if (!supa || !userId || userId === "demo-user-1" || userId === "00000000-0000-0000-0000-000000000001") return { ok: true };
+      const { error } = await supa.from("user_data").upsert(
+        { user_id: userId, data, updated_at: (/* @__PURE__ */ new Date()).toISOString() },
+        { onConflict: "user_id" }
+      );
+      return error ? { error: error.message } : { ok: true };
     },
     async checkPlan(userId) {
-      return API.get(`/check-plan?userId=${userId}`);
+      var _a, _b;
+      const supa = getSupa();
+      if (!supa || !userId || userId === "demo-user-1") return { plan: "free" };
+      const { data: row } = await supa.from("user_data").select("data").eq("user_id", userId).single();
+      return { plan: ((_b = (_a = row == null ? void 0 : row.data) == null ? void 0 : _a._meta) == null ? void 0 : _b.plan) || "free" };
     },
     async requestReset(email) {
-      return API.post("/reset-password", { action: "request", email });
+      const supa = getSupa();
+      if (!supa) return { error: "Supabase n\xE3o dispon\xEDvel" };
+      const { error } = await supa.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: window.location.origin + "?reset=1"
+      });
+      return error ? { error: error.message } : { ok: true };
     },
     async verifyResetToken(token) {
-      return API.post("/reset-password", { action: "verify", token });
+      return { ok: true };
     },
     async confirmReset(token, newPassword) {
-      return API.post("/reset-password", { action: "confirm", token, newPassword });
+      const supa = getSupa();
+      if (!supa) return { error: "Supabase n\xE3o dispon\xEDvel" };
+      const { error } = await supa.auth.updateUser({ password: newPassword });
+      return error ? { error: error.message } : { ok: true };
     }
   };
   var CSS = `
@@ -3536,6 +3594,36 @@ ${catInfo}`);
     const [pendingPlan, setPendingPlan] = (0, import_react.useState)(null);
     useStripeReturn(authUser2, setAuthUser);
     (0, import_react.useEffect)(() => {
+      const supa = getSupa();
+      if (!supa) return;
+      supa.auth.getSession().then(async ({ data: { session } }) => {
+        var _a, _b;
+        if (!(session == null ? void 0 : session.user)) return;
+        const userId = session.user.id;
+        const { data: row } = await supa.from("user_data").select("data").eq("user_id", userId).single();
+        const stored = (row == null ? void 0 : row.data) || {};
+        const userData = stored && stored.accs !== void 0 ? stored : createUserData(false);
+        const meta = userData._meta || {};
+        setAuthUser({
+          id: userId,
+          name: meta.name || ((_a = session.user.user_metadata) == null ? void 0 : _a.name) || session.user.email.split("@")[0],
+          email: session.user.email,
+          tenant: meta.tenant || ((_b = session.user.user_metadata) == null ? void 0 : _b.tenant) || "Minha Empresa",
+          plan: meta.plan || "free",
+          data: userData
+        });
+        setScreen("app");
+      }).catch(() => {
+      });
+      const { data: { subscription } } = supa.auth.onAuthStateChange((event) => {
+        if (event === "SIGNED_OUT") {
+          setAuthUser(null);
+          setScreen("landing");
+        }
+      });
+      return () => subscription.unsubscribe();
+    }, []);
+    (0, import_react.useEffect)(() => {
       if (!(authUser2 == null ? void 0 : authUser2.id)) return;
       API.checkPlan(authUser2.id).then((res) => {
         if (res.plan && res.plan !== authUser2.plan) {
@@ -3586,6 +3674,8 @@ ${catInfo}`);
         {
           authUser: authUser2,
           onLogout: () => {
+            const s = getSupa();
+            if (s) s.auth.signOut();
             setAuthUser(null);
             setScreen("landing");
           },
@@ -3696,7 +3786,9 @@ ${catInfo}`);
       API.saveData(authUser2.id, data).catch((e) => console.warn("Save falhou:", e));
     }, [authUser2.id]);
     (0, import_react.useEffect)(() => {
-      const data = { accs, cats, ccs, bills, txs, bgs, goals };
+      var _a2;
+      const meta = ((_a2 = authUser2.data) == null ? void 0 : _a2._meta) || { name: authUser2.name, tenant: authUser2.tenant, plan: authUser2.plan || "free" };
+      const data = { accs, cats, ccs, bills, txs, bgs, goals, _meta: meta };
       authUser2.data = data;
       saveToCloud(data);
     }, [accs, cats, ccs, bills, txs, bgs, goals]);
