@@ -875,12 +875,28 @@ function DashboardPage({ profile, accounts, txs, categories, cards, bills, budge
   const paidExpenses = useMemo(() => monthTxs.filter((t) => (t.type === "expense") && t.status === "paid").reduce((s, t) => s + t.amount, 0), [monthTxs]);
   const totalExpense = useMemo(() => monthTxs.filter((t) => t.type === "expense" || t.type === "card_expense").reduce((s, t) => s + t.amount, 0), [monthTxs]);
 
-  // Widget 1: Saldo disponivel = receitas - despesas pagas - faturas abertas de cartao
-  const openCardBillsTotal = useMemo(() => {
-    if (!isCurrentMonth) return 0;
-    return bills.filter((b) => b.status === "open").reduce((s, b) => s + b.amount, 0);
-  }, [bills, isCurrentMonth]);
-  const availableBalance = useMemo(() => income - paidExpenses - openCardBillsTotal, [income, paidExpenses, openCardBillsTotal]);
+  // Widget 1: Saldo disponivel = receitas - despesas pagas - compras cartão não pagas
+  // "comprometido" = card_expense transactions do mês cujas faturas ainda estão abertas/pendentes
+  const committedCardSpend = useMemo(() => {
+    if (!isCurrentMonth) {
+      // for past months, use card_expense txs of that period
+      return monthTxs.filter((t) => t.type === "card_expense").reduce((s, t) => s + t.amount, 0);
+    }
+    // For current month: sum card_expense txs whose bill is still open (or no bill recorded)
+    const paidBillCardIds = new Set(
+      bills.filter((b) => b.status === "paid").map((b) => b.card_id)
+    );
+    // open bills give us the exact committed amount per card
+    const openBillsTotal = bills.filter((b) => b.status === "open").reduce((s, b) => s + b.amount, 0);
+    // also include card_expense txs for cards that have no bill record yet
+    const cardsWithBill = new Set(bills.map((b) => b.card_id));
+    const unbilledCardSpend = monthTxs
+      .filter((t) => t.type === "card_expense" && !cardsWithBill.has(t.card_id))
+      .reduce((s, t) => s + t.amount, 0);
+    return openBillsTotal + unbilledCardSpend;
+  }, [bills, monthTxs, isCurrentMonth]);
+  const availableBalance = useMemo(() => income - paidExpenses - committedCardSpend, [income, paidExpenses, committedCardSpend]);
+  const openCardBillsTotal = committedCardSpend;
 
   // Widget 2: Last 6 months line chart data
   const last6 = useMemo(() => {
@@ -1119,48 +1135,72 @@ function DashboardPage({ profile, accounts, txs, categories, cards, bills, budge
 
       // Widget 3: Próximas faturas de cartão
       React.createElement("div", { className: "card" },
-        React.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "\u{1F4B3} Pr\xF3ximas faturas de cart\xE3o"),
+        React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 } },
+          React.createElement("div", { className: "card-title", style: { marginBottom: 0 } }, "\u{1F4B3} Pr\xF3ximas faturas de cart\xE3o"),
+          cardInvoices.length > 0 && React.createElement("span", { style: { fontSize: 11, color: "var(--text3)" } }, cardInvoices.length, " cart\xE3o", cardInvoices.length !== 1 ? "s" : "")
+        ),
         cardInvoices.length === 0
           ? React.createElement("div", { className: "empty", style: { padding: "20px 0" } },
               React.createElement("div", { className: "empty-icon" }, "\u{1F4B3}"),
               React.createElement("div", { className: "empty-sub" }, "Nenhum cart\xE3o cadastrado")
             )
-          : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+          : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } },
               cardInvoices.map((c) => {
                 const usePct = c.credit_limit > 0 ? (c.billTotal / c.credit_limit) * 100 : 0;
                 const isUrgent = c.daysLeft <= 5;
+                const isOverdue = c.daysLeft <= 0;
                 const barColor = usePct > 80 ? "var(--red)" : usePct > 60 ? "var(--yellow)" : c.color || "var(--accent)";
+                const badgeColor = isOverdue ? "badge-red" : isUrgent ? "badge-red" : c.daysLeft <= 10 ? "badge-yellow" : "badge-green";
+                const dueDateStr = c.dueDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
                 return React.createElement("div", {
                   key: c.id,
-                  style: { padding: "14px 16px", background: "var(--surface2)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }
+                  style: {
+                    padding: "16px",
+                    background: "var(--surface2)",
+                    borderRadius: "var(--radius)",
+                    border: `1px solid ${isUrgent ? "rgba(239,68,68,0.3)" : "var(--border)"}`,
+                    transition: "border-color 0.2s"
+                  }
                 },
-                  React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 } },
+                  // Header: nome + badge vencimento
+                  React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 } },
                     React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
-                      React.createElement("div", { style: { width: 10, height: 10, borderRadius: 3, background: c.color || "var(--accent)", flexShrink: 0 } }),
-                      React.createElement("span", { style: { fontWeight: 700, fontSize: 13 } }, c.name),
+                      React.createElement("div", { style: { width: 12, height: 12, borderRadius: 4, background: c.color || "var(--accent)", flexShrink: 0 } }),
+                      React.createElement("span", { style: { fontWeight: 700, fontSize: 14, color: "var(--text)" } }, c.name),
                       c.bank && React.createElement("span", { style: { fontSize: 11, color: "var(--text3)" } }, c.bank)
                     ),
-                    React.createElement("span", {
-                      className: `badge ${isUrgent ? "badge-red" : "badge-yellow"}`,
-                      style: { fontSize: 10 }
-                    }, "Vence dia ", c.due_day, isUrgent ? " \u26A0\uFE0F" : "")
-                  ),
-                  React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 10 } },
-                    React.createElement("div", null,
-                      React.createElement("div", { style: { fontSize: 10, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 } }, "Fatura atual"),
-                      React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 16, fontWeight: 700, color: "var(--red)" } }, fmt(c.billTotal))
-                    ),
-                    React.createElement("div", { style: { textAlign: "right" } },
-                      React.createElement("div", { style: { fontSize: 10, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 } }, "Dispon\xEDvel"),
-                      React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 16, fontWeight: 700, color: c.available < 0 ? "var(--red)" : "var(--green)" } }, fmt(Math.max(c.available, 0)))
+                    React.createElement("span", { className: `badge ${badgeColor}`, style: { fontSize: 10, gap: 3 } },
+                      "\u{1F4C5} Vence ", dueDateStr,
+                      isUrgent && !isOverdue && " \u26A0\uFE0F",
+                      isOverdue && " \u{1F534}"
                     )
                   ),
-                  React.createElement("div", { className: "progress" },
-                    React.createElement("div", { className: "progress-bar", style: { width: `${Math.min(usePct, 100)}%`, background: barColor, transition: "width 0.4s" } })
+                  // 3-column metrics: fatura / limite total / disponível
+                  React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 } },
+                    React.createElement("div", { style: { background: "var(--surface)", borderRadius: 8, padding: "10px 12px", border: "1px solid var(--border)" } },
+                      React.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 } }, "Fatura atual"),
+                      React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 14, fontWeight: 700, color: c.billTotal > 0 ? "var(--red)" : "var(--text3)" } }, fmt(c.billTotal))
+                    ),
+                    React.createElement("div", { style: { background: "var(--surface)", borderRadius: 8, padding: "10px 12px", border: "1px solid var(--border)" } },
+                      React.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 } }, "Limite total"),
+                      React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 14, fontWeight: 700, color: "var(--text)" } }, fmt(c.credit_limit))
+                    ),
+                    React.createElement("div", { style: { background: "var(--surface)", borderRadius: 8, padding: "10px 12px", border: "1px solid var(--border)" } },
+                      React.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 } }, "Dispon\xEDvel"),
+                      React.createElement("div", { style: { fontFamily: "var(--mono)", fontSize: 14, fontWeight: 700, color: c.available <= 0 ? "var(--red)" : "var(--green)" } }, fmt(Math.max(c.available, 0)))
+                    )
                   ),
-                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text3)", marginTop: 4 } },
-                    React.createElement("span", null, "Limite: ", fmt(c.credit_limit)),
-                    React.createElement("span", null, usePct.toFixed(0), "% utilizado")
+                  // Progress bar
+                  React.createElement("div", { className: "progress" },
+                    React.createElement("div", { className: "progress-bar", style: { width: `${Math.min(usePct, 100)}%`, background: barColor, transition: "width 0.5s" } })
+                  ),
+                  React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--text3)", marginTop: 5 } },
+                    React.createElement("span", null, usePct.toFixed(1), "% do limite utilizado"),
+                    React.createElement("span", null,
+                      isOverdue ? React.createElement("span", { style: { color: "var(--red)", fontWeight: 700 } }, "Vencida") :
+                      isUrgent  ? React.createElement("span", { style: { color: "var(--red)", fontWeight: 700 } }, c.daysLeft, "d restantes") :
+                                  React.createElement("span", null, c.daysLeft, "d restantes")
+                    )
                   )
                 );
               })
