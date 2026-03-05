@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-162645 -->
+<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-164310 -->
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/><title>FinanceOS</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f0b429'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='serif' fill='%23000'>F</text></svg>"/>
@@ -945,7 +945,11 @@
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>var{useState,useEffect,useMemo,useCallback,useRef}=React;</script>
+<script>
+  window.__SUPA_URL__ = "https://defgyitlwajworjdbqlz.supabase.co";
+  window.__SUPA_KEY__ = "sb_publishable_FZ0acKJWiD8mKMgJe-141Q_r26BEfmO";
+  var{useState,useEffect,useMemo,useCallback,useRef}=React;
+</script>
 <script>var __require=(id)=>{if(id==="react")return React;if(id==="react-dom/client")return ReactDOM;return{};};(() => {
   var __create = Object.create;
   var __defProp = Object.defineProperty;
@@ -996,8 +1000,8 @@
   // tmp/app.tsx
   var import_react={default:React,useState,useEffect,useMemo,useCallback,useRef};
   var import_client={default:ReactDOM};
-  var SUPA_URL = "https://defgyitlwajworjdbqlz.supabase.co";
-  var SUPA_KEY = "sb_publishable_FZ0acKJWiD8mKMgJe-141Q_r26BEfmO";
+  var SUPA_URL = window.__SUPA_URL__ || "https://defgyitlwajworjdbqlz.supabase.co";
+  var SUPA_KEY = window.__SUPA_KEY__ || "sb_publishable_FZ0acKJWiD8mKMgJe-141Q_r26BEfmO";
   var getSupa = () => {
     if (typeof window !== "undefined" && window.supabase) {
       if (!getSupa._client) {
