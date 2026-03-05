@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-200933 -->
+<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-202536 -->
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -3696,7 +3696,15 @@ ${catInfo}`);
           authUser: authUser2,
           onLogout: async () => {
             const s = getSupa();
-            if (s) await s.auth.signOut();
+            if (s) await s.auth.signOut({ scope: "global" });
+            try {
+              Object.keys(localStorage).forEach((k) => {
+                if (k.startsWith("sb-") || k.includes("supabase") || k.includes("fos-supa")) {
+                  localStorage.removeItem(k);
+                }
+              });
+            } catch (e) {
+            }
             setAuthUser(null);
             setScreen("landing");
           },
@@ -5998,7 +6006,15 @@ ${catInfo}`);
           body: JSON.stringify({ userId: authUser2.id })
         }).catch(() => {
         });
-        await supa.auth.signOut();
+        await supa.auth.signOut({ scope: "global" });
+        try {
+          Object.keys(localStorage).forEach((k) => {
+            if (k.startsWith("sb-") || k.includes("supabase") || k.includes("fos-supa")) {
+              localStorage.removeItem(k);
+            }
+          });
+        } catch (e) {
+        }
       }
       onLogout2();
     } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 14 }), "Excluir Minha Conta")))));
