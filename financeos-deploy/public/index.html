@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark"><!-- build:20260305-012649 -->
+<html lang="pt-BR" data-theme="dark"><!-- build:20260305-013323 -->
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
@@ -2590,6 +2590,241 @@
   function AppWithBoundary() {
     return /* @__PURE__ */ import_react.default.createElement(ErrorBoundary, null, /* @__PURE__ */ import_react.default.createElement(AppRouter, null));
   }
+  function FloatingChat({ txs, setTxs, accs, cats, ccs, fmt: fmt2, setPage }) {
+    const [open, setOpen] = (0, import_react.useState)(false);
+    const [msgs, setMsgs] = (0, import_react.useState)([{
+      id: "1",
+      role: "assistant",
+      content: 'Ol\xE1! Sou seu assistente financeiro \u{1F4B0} Posso registrar transa\xE7\xF5es, mostrar resumos e responder d\xFAvidas. Tente: "Gastei R$ 50 no mercado" ou "Qual meu saldo?"',
+      ts: /* @__PURE__ */ new Date()
+    }]);
+    const [input, setInput] = (0, import_react.useState)("");
+    const [typing, setTyping] = (0, import_react.useState)(false);
+    const endRef = (0, import_react.useRef)(null);
+    const inputRef = (0, import_react.useRef)(null);
+    const SUGGESTIONS = [
+      "Qual meu saldo atual?",
+      "Gastei R$ 80 no mercado hoje",
+      "Quais meus gastos este m\xEAs?",
+      "Quando fecha minha fatura?"
+    ];
+    (0, import_react.useEffect)(() => {
+      var _a;
+      (_a = endRef.current) == null ? void 0 : _a.scrollIntoView({ behavior: "smooth" });
+    }, [msgs, typing]);
+    (0, import_react.useEffect)(() => {
+      if (open) setTimeout(() => {
+        var _a;
+        return (_a = inputRef.current) == null ? void 0 : _a.focus();
+      }, 100);
+    }, [open]);
+    const addMsg = (role, content) => {
+      setMsgs((prev) => [...prev, { id: Date.now().toString(), role, content, ts: /* @__PURE__ */ new Date() }]);
+    };
+    const respond = (text) => {
+      setTyping(true);
+      setTimeout(() => {
+        setTyping(false);
+        const lower = text.toLowerCase();
+        const amtMatch = text.match(/r\$?\s*([\d.,]+)/i) || text.match(/([\d]+[.,][\d]{2})/);
+        const amt = amtMatch ? parseFloat(amtMatch[1].replace(",", ".")) : null;
+        const descPatterns = [
+          /(?:no|na|em|com|de)\s+(.+?)(?:\s+hoje|\s+ontem|\s+r\$|$)/i,
+          /gastei.+?(?:no|na|em)\s+(.+?)(?:\s+hoje|$)/i,
+          /comprei\s+(.+?)(?:\s+r\$|$)/i
+        ];
+        let desc = null;
+        for (const p of descPatterns) {
+          const m = text.match(p);
+          if (m) {
+            desc = m[1].trim();
+            break;
+          }
+        }
+        if ((lower.includes("gastei") || lower.includes("paguei") || lower.includes("comprei") || lower.includes("transa\xE7\xE3o")) && amt) {
+          const defaultAcc = accs.find((a) => a.active) || accs[0];
+          const defaultCat = cats.find((c) => c.type === "expense");
+          if (defaultAcc) {
+            const newTx = {
+              id: uid(),
+              tenant_id: TID,
+              type: "expense",
+              description: desc || text.replace(/r\$?\s*[\d.,]+/i, "").replace(/gastei|paguei|comprei/gi, "").trim() || "Despesa via chat",
+              amount: amt,
+              date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+              account_id: defaultAcc.id,
+              category_id: (defaultCat == null ? void 0 : defaultCat.id) || null,
+              status: "paid",
+              notes: "Registrado via assistente"
+            };
+            setTxs((t) => [...t, newTx]);
+            addMsg("assistant", `\u2705 Despesa registrada!
+
+\u{1F4B8} **${newTx.description}**
+Valor: ${fmt2(amt)}
+Conta: ${defaultAcc.name}
+
+Para detalhes, acesse Transa\xE7\xF5es.`);
+          } else {
+            addMsg("assistant", "\u26A0\uFE0F Nenhuma conta encontrada. Cadastre uma conta primeiro em Contas.");
+          }
+        } else if (lower.includes("saldo") || lower.includes("quanto tenho") || lower.includes("resumo")) {
+          const total = accs.filter((a) => a.active).reduce((s, a) => {
+            const bal = txs.filter((t) => t.account_id === a.id).reduce((b, t) => t.type === "income" ? b + t.amount : b - t.amount, a.initial_balance || 0);
+            return s + bal;
+          }, 0);
+          const thisMonth = (/* @__PURE__ */ new Date()).toISOString().slice(0, 7);
+          const income = txs.filter((t) => {
+            var _a;
+            return t.type === "income" && ((_a = t.date) == null ? void 0 : _a.startsWith(thisMonth)) && t.status === "paid";
+          }).reduce((s, t) => s + t.amount, 0);
+          const expense = txs.filter((t) => {
+            var _a;
+            return (t.type === "expense" || t.type === "card_expense") && ((_a = t.date) == null ? void 0 : _a.startsWith(thisMonth)) && t.status === "paid";
+          }).reduce((s, t) => s + t.amount, 0);
+          addMsg("assistant", `\u{1F4CA} **Resumo financeiro:**
+
+\u{1F4B0} Saldo total: ${fmt2(total)}
+\u{1F4C8} Receitas este m\xEAs: ${fmt2(income)}
+\u{1F4C9} Gastos este m\xEAs: ${fmt2(expense)}
+\u{1F4B5} Resultado: ${fmt2(income - expense)}`);
+        } else if (lower.includes("fatura") || lower.includes("cart\xE3o") || lower.includes("fecha")) {
+          if (ccs.length === 0) {
+            addMsg("assistant", "Voc\xEA n\xE3o tem cart\xF5es cadastrados. Acesse Cart\xF5es para adicionar.");
+          } else {
+            const today = /* @__PURE__ */ new Date();
+            const info = ccs.map((cc) => {
+              const d = today.getDate();
+              let cm = today.getMonth(), cy = today.getFullYear();
+              if (d >= cc.closing_day) {
+                cm++;
+                if (cm > 11) {
+                  cm = 0;
+                  cy++;
+                }
+              }
+              const closing = new Date(cy, cm, cc.closing_day);
+              const days = Math.ceil((closing - today) / 864e5);
+              return `\u{1F4B3} **${cc.name}** \u2014 fecha em ${days}d (dia ${cc.closing_day})`;
+            }).join("\n");
+            addMsg("assistant", `\u{1F4C5} **Pr\xF3ximos fechamentos:**
+
+${info}`);
+          }
+        } else if (lower.includes("gastos") || lower.includes("despesas") || lower.includes("quanto gastei")) {
+          const thisMonth = (/* @__PURE__ */ new Date()).toISOString().slice(0, 7);
+          const total = txs.filter((t) => {
+            var _a;
+            return (t.type === "expense" || t.type === "card_expense") && ((_a = t.date) == null ? void 0 : _a.startsWith(thisMonth)) && t.status === "paid";
+          }).reduce((s, t) => s + t.amount, 0);
+          const topCats = cats.filter((c) => c.type === "expense").map((c) => ({
+            name: c.name,
+            val: txs.filter((t) => {
+              var _a;
+              return t.category_id === c.id && ((_a = t.date) == null ? void 0 : _a.startsWith(thisMonth));
+            }).reduce((s, t) => s + t.amount, 0)
+          })).filter((c) => c.val > 0).sort((a, b) => b.val - a.val).slice(0, 3);
+          const catInfo = topCats.map((c) => `  \u2022 ${c.name}: ${fmt2(c.val)}`).join("\n") || "  Nenhum gasto categorizado";
+          addMsg("assistant", `\u{1F4C9} **Gastos este m\xEAs:** ${fmt2(total)}
+
+\u{1F3C6} Top categorias:
+${catInfo}`);
+        } else {
+          addMsg("assistant", 'Entendi! Posso ajudar com:\n\n\u2022 Registrar gastos: "Gastei R$ 50 no mercado"\n\u2022 Ver saldo: "Qual meu saldo?"\n\u2022 Ver gastos: "Quanto gastei este m\xEAs?"\n\u2022 Faturas: "Quando fecha minha fatura?"');
+        }
+      }, 800 + Math.random() * 600);
+    };
+    const send = () => {
+      const t = input.trim();
+      if (!t || typing) return;
+      addMsg("user", t);
+      setInput("");
+      respond(t);
+    };
+    const fmtTime = (d) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    return /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => setOpen((o) => !o), style: {
+      position: "fixed",
+      bottom: 80,
+      right: 20,
+      zIndex: 200,
+      width: 52,
+      height: 52,
+      borderRadius: "50%",
+      border: "none",
+      cursor: "pointer",
+      background: "linear-gradient(135deg, #f0b429, #e09000)",
+      boxShadow: "0 4px 20px rgba(240,180,41,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      transition: "transform 0.2s, box-shadow 0.2s",
+      transform: open ? "scale(0.9)" : "scale(1)"
+    }, title: "Assistente IA" }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 22 } }, open ? "\u2715" : "\u2728")), open && /* @__PURE__ */ import_react.default.createElement(import_react.default.Fragment, null, /* @__PURE__ */ import_react.default.createElement("div", { onClick: () => setOpen(false), style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 210 } }), /* @__PURE__ */ import_react.default.createElement("div", { style: {
+      position: "fixed",
+      bottom: 144,
+      right: 16,
+      zIndex: 220,
+      width: "min(420px, calc(100vw - 32px))",
+      height: "min(560px, 80vh)",
+      background: "var(--surface)",
+      borderRadius: 18,
+      border: "1px solid var(--border)",
+      boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden"
+    } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { padding: "14px 16px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, background: "var(--surface2)" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#f0b429,#e09000)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 } }, "\u2728"), /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 14, fontWeight: 700, color: "var(--text)" } }, "Assistente Financeiro"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--green)", display: "flex", alignItems: "center", gap: 4 } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { width: 6, height: 6, borderRadius: "50%", background: "var(--green)", display: "inline-block" } }), "Online")), /* @__PURE__ */ import_react.default.createElement("button", { onClick: () => setOpen(false), style: { background: "none", border: "none", cursor: "pointer", color: "var(--text2)", fontSize: 18, padding: 4 } }, "\u2715")), /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, overflowY: "auto", padding: "16px 14px", display: "flex", flexDirection: "column", gap: 12 } }, msgs.map((m) => /* @__PURE__ */ import_react.default.createElement("div", { key: m.id, style: { display: "flex", gap: 8, flexDirection: m.role === "user" ? "row-reverse" : "row" } }, m.role === "assistant" && /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#f0b429,#e09000)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0, marginTop: 2 } }, "\u2728"), /* @__PURE__ */ import_react.default.createElement("div", { style: {
+      maxWidth: "78%",
+      padding: "10px 13px",
+      borderRadius: m.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+      background: m.role === "user" ? "var(--gold)" : "var(--surface2)",
+      color: m.role === "user" ? "#000" : "var(--text)"
+    } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-line" } }, m.content), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: m.role === "user" ? "rgba(0,0,0,0.5)" : "var(--text3)", marginTop: 4, textAlign: m.role === "user" ? "right" : "left" } }, fmtTime(m.ts))))), typing && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 8, alignItems: "flex-end" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#f0b429,#e09000)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 } }, "\u2728"), /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--surface2)", borderRadius: "14px 14px 14px 4px", padding: "12px 16px", display: "flex", gap: 4, alignItems: "center" } }, [0, 1, 2].map((i) => /* @__PURE__ */ import_react.default.createElement("span", { key: i, style: { width: 6, height: 6, borderRadius: "50%", background: "var(--text3)", display: "inline-block", animation: "bounce 1s infinite", animationDelay: `${i * 150}ms` } })))), /* @__PURE__ */ import_react.default.createElement("div", { ref: endRef })), msgs.length <= 1 && /* @__PURE__ */ import_react.default.createElement("div", { style: { padding: "0 14px 10px", display: "flex", gap: 6, overflowX: "auto", flexShrink: 0 } }, SUGGESTIONS.map((s) => /* @__PURE__ */ import_react.default.createElement("button", { key: s, onClick: () => {
+      var _a;
+      setInput(s);
+      (_a = inputRef.current) == null ? void 0 : _a.focus();
+    }, style: {
+      flexShrink: 0,
+      fontSize: 11,
+      padding: "6px 10px",
+      borderRadius: 99,
+      background: "var(--gold-dim)",
+      color: "var(--gold)",
+      border: "1px solid var(--gold-dim)",
+      cursor: "pointer",
+      whiteSpace: "nowrap"
+    } }, s))), /* @__PURE__ */ import_react.default.createElement("div", { style: { padding: "10px 14px 12px", borderTop: "1px solid var(--border)", flexShrink: 0, display: "flex", gap: 8, alignItems: "flex-end", background: "var(--surface2)" } }, /* @__PURE__ */ import_react.default.createElement(
+      "textarea",
+      {
+        ref: inputRef,
+        value: input,
+        onChange: (e) => setInput(e.target.value),
+        onKeyDown: (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            send();
+          }
+        },
+        placeholder: "Digite sua mensagem...",
+        rows: 1,
+        style: { flex: 1, resize: "none", background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", borderRadius: 12, padding: "10px 14px", fontSize: 13, fontFamily: "inherit", outline: "none", maxHeight: 100, overflowY: "auto", lineHeight: 1.5 }
+      }
+    ), /* @__PURE__ */ import_react.default.createElement("button", { onClick: send, disabled: !input.trim() || typing, style: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      border: "none",
+      cursor: "pointer",
+      background: input.trim() && !typing ? "var(--gold)" : "var(--border2)",
+      color: input.trim() && !typing ? "#000" : "var(--text3)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0,
+      fontSize: 18,
+      transition: "all 0.2s"
+    } }, "\u27A4")), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 10, color: "var(--text3)", textAlign: "center", paddingBottom: 8 } }, "Enter para enviar \xB7 Shift+Enter nova linha"))), /* @__PURE__ */ import_react.default.createElement("style", null, `@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }`));
+  }
   function createUserData(isDemoUser) {
     if (isDemoUser) {
       return {
@@ -3468,7 +3703,7 @@
     } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 16, lineHeight: 1 } }, theme === "dark" ? "\u2600\uFE0F" : "\u{1F319}"), theme === "dark" ? " Modo Claro" : " Modo Escuro"), /* @__PURE__ */ import_react.default.createElement("button", { className: "nav-item", style: { color: "var(--red)" }, onClick: () => {
       setDrawerOpen(false);
       onLogout();
-    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 16, c: "var(--red)" }), "Sair da conta"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "drawer-dismiss" })));
+    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "close", s: 16, c: "var(--red)" }), "Sair da conta"))), /* @__PURE__ */ import_react.default.createElement("div", { className: "drawer-dismiss" })), /* @__PURE__ */ import_react.default.createElement(FloatingChat, { txs, setTxs, accs, cats, ccs, fmt, setPage }));
   }
   function DashboardPage({ accs, cats, ccs, bills, txs, bgs, goals, computeBalance, curr, prev, totalLiquid, totalAssets, saving, fmt: fmt2, fmtDate: fmtDate2, fmtShort: fmtShort2, dashWidgets = {} }) {
     const show = (k) => dashWidgets[k] !== false;
