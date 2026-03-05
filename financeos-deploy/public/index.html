@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR"><!-- build:20260305-220423 -->
+<!DOCTYPE html><html lang="pt-BR"><!-- build:20260305-220636 -->
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
@@ -49,7 +49,31 @@ const SUPA_KEY = (window.__FOS || {}).k || "sb_publishable_FZ0acKJWiD8mKMgJe-141
 const getSupa = () => {
   if (typeof window !== "undefined" && window.supabase) {
     if (!getSupa._c) getSupa._c = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
-      auth: { persistSession: true, storageKey: "fos3-session" }
+      auth: {
+        persistSession: true,
+        storageKey: "fos3-session",
+        storage: {
+          getItem: (key) => {
+            try {
+              return sessionStorage.getItem(key);
+            } catch (e) {
+              return null;
+            }
+          },
+          setItem: (key, val) => {
+            try {
+              sessionStorage.setItem(key, val);
+            } catch (e) {
+            }
+          },
+          removeItem: (key) => {
+            try {
+              sessionStorage.removeItem(key);
+            } catch (e) {
+            }
+          }
+        }
+      }
     });
     return getSupa._c;
   }
