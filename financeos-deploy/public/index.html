@@ -1,6 +1,10 @@
-<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-172334 -->
+<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-173841 -->
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/><title>FinanceOS</title>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#f0b429"/>
+<title>FinanceOS</title>
+<link rel="manifest" href="/manifest.json"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f0b429'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='serif' fill='%23000'>F</text></svg>"/>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
@@ -3078,16 +3082,6 @@ ${catInfo}`);
       return [__spreadValues({}, DEMO_USER)];
     }
   }
-  function saveUsers(users) {
-    try {
-      const toSave = users.map(
-        (u) => u.id === "demo-user-1" ? __spreadProps(__spreadValues({}, u), { data: null }) : u
-      );
-      localStorage.setItem("financeos_users", JSON.stringify(toSave));
-    } catch (e) {
-      console.warn("localStorage cheio ou bloqueado:", e);
-    }
-  }
   var USERS_DB = loadUsers();
   var STRIPE_CONFIG = {
     publishableKey: "pk_live_51T5dUsIkPG3ZTj7UM0CwCNTgJ7jVJEkV0f8bkm2KSIsi5nfCCIVTuWaeIaurs0grDLsrM1brM7KmlMLpYyZdxVHP00cR3Rhjtj",
@@ -3136,10 +3130,18 @@ ${catInfo}`);
         if (authUser2) {
           const updated = __spreadProps(__spreadValues({}, authUser2), { plan: "pro" });
           setAuthUser(updated);
-          const idx = USERS_DB.findIndex((u) => u.id === authUser2.id);
-          if (idx >= 0) {
-            USERS_DB[idx].plan = "pro";
-            saveUsers(USERS_DB);
+          const supa = getSupa();
+          if (supa && authUser2.id && authUser2.id !== "demo-user-1") {
+            supa.from("user_data").select("data").eq("user_id", authUser2.id).single().then(({ data: row }) => {
+              if (row == null ? void 0 : row.data) {
+                const newData = __spreadProps(__spreadValues({}, row.data), { _meta: __spreadProps(__spreadValues({}, row.data._meta || {}), { plan: "pro" }) });
+                supa.from("user_data").upsert(
+                  { user_id: authUser2.id, data: newData, updated_at: (/* @__PURE__ */ new Date()).toISOString() },
+                  { onConflict: "user_id" }
+                );
+              }
+            }).catch(() => {
+            });
           }
         }
         window.history.replaceState({}, "", window.location.pathname);
@@ -3603,7 +3605,7 @@ ${catInfo}`);
       }
       return "landing";
     });
-    const [showPlans, setShowPlans] = (0, import_react.useState)(false);
+    const [showPlans, setShowPlans2] = (0, import_react.useState)(false);
     const [pendingPlan, setPendingPlan] = (0, import_react.useState)(null);
     useStripeReturn(authUser2, setAuthUser);
     (0, import_react.useEffect)(() => {
@@ -3663,7 +3665,7 @@ ${catInfo}`);
     };
     const handleUpgrade = (plan) => {
       if (authUser2) {
-        setShowPlans(true);
+        setShowPlans2(true);
       } else {
         setPendingPlan(plan || "pro_monthly");
         setScreen("register");
@@ -3675,9 +3677,9 @@ ${catInfo}`);
         {
           authUser: authUser2,
           setAuthUser,
-          onClose: () => setShowPlans(false),
+          onClose: () => setShowPlans2(false),
           onRegister: (plan) => {
-            setShowPlans(false);
+            setShowPlans2(false);
             setPendingPlan(plan);
             setScreen("register");
           }
@@ -3692,7 +3694,7 @@ ${catInfo}`);
             setAuthUser(null);
             setScreen("landing");
           },
-          onUpgrade: () => setShowPlans(true)
+          onUpgrade: () => setShowPlans2(true)
         }
       ));
     }
@@ -3715,9 +3717,9 @@ ${catInfo}`);
       {
         authUser: null,
         setAuthUser,
-        onClose: () => setShowPlans(false),
+        onClose: () => setShowPlans2(false),
         onRegister: (plan) => {
-          setShowPlans(false);
+          setShowPlans2(false);
           setPendingPlan(plan);
           setScreen("register");
         }
@@ -3805,6 +3807,49 @@ ${catInfo}`);
       authUser2.data = data;
       saveToCloud(data);
     }, [accs, cats, ccs, bills, txs, bgs, goals]);
+    const notifiedRef = (0, import_react.useRef)(/* @__PURE__ */ new Set());
+    (0, import_react.useEffect)(() => {
+      if (!(authUser2 == null ? void 0 : authUser2.email) || authUser2.id === "demo-user-1") return;
+      const notify = (type, data) => {
+        const key = type + JSON.stringify(data);
+        if (notifiedRef.current.has(key)) return;
+        notifiedRef.current.add(key);
+        fetch("/api/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type, email: authUser2.email, name: authUser2.name, data })
+        }).catch(() => {
+        });
+      };
+      const nowM = /* @__PURE__ */ new Date();
+      nowM.setDate(1);
+      nowM.setHours(0, 0, 0, 0);
+      const endM = new Date(nowM);
+      endM.setMonth(endM.getMonth() + 1);
+      bgs.forEach((bg) => {
+        if (!bg.monthly_limit) return;
+        const cat = cats.find((c) => c.id === bg.category_id);
+        const spent = txs.filter(
+          (t) => t.category_id === bg.category_id && (t.type === "expense" || t.type === "card_expense") && new Date(t.date) >= nowM && new Date(t.date) < endM
+        ).reduce((s, t) => s + t.amount, 0);
+        const pct2 = Math.round(spent / bg.monthly_limit * 100);
+        if (pct2 >= 80) {
+          notify("budget_alert", { category: (cat == null ? void 0 : cat.name) || "Categoria", spent, limit: bg.monthly_limit, percent: pct2 });
+        }
+      });
+      const today = /* @__PURE__ */ new Date();
+      today.setHours(0, 0, 0, 0);
+      bills.forEach((bill) => {
+        if (bill.status === "paid") return;
+        const due = new Date(bill.due_date);
+        due.setHours(0, 0, 0, 0);
+        const daysLeft = Math.round((due - today) / 864e5);
+        if (daysLeft >= 0 && daysLeft <= 3) {
+          const cc = ccs.find((c) => c.id === bill.card_id);
+          notify("bill_due", { cardName: (cc == null ? void 0 : cc.name) || "Cart\xE3o", amount: bill.amount, dueDate: bill.due_date, daysLeft });
+        }
+      });
+    }, [bgs, txs, bills]);
     const computeBalance2 = (0, import_react.useCallback)((accId) => {
       const acc = accs.find((a) => a.id === accId);
       if (!acc) return 0;
@@ -5815,6 +5860,7 @@ ${catInfo}`);
     const WidgetRow = ({ label, desc, k }) => /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { flex: 1, paddingRight: 16 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 14, fontWeight: 600, color: "var(--text)" } }, label), desc && /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginTop: 2 } }, desc)), /* @__PURE__ */ import_react.default.createElement(Toggle, { value: localWidgets[k], onChange: () => toggleWidget(k) }));
     const TABS = [
       { id: "preferencias", label: "Prefer\xEAncias" },
+      { id: "plano", label: "Meu Plano" },
       { id: "alertas", label: "Alertas e notifica\xE7\xF5es" },
       { id: "dashboard", label: "Dashboard" },
       { id: "seguranca", label: "Seguran\xE7a" }
@@ -5896,7 +5942,31 @@ ${catInfo}`);
         label: "Nova transa\xE7\xE3o",
         desc: "Notifica\xE7\xE3o a cada nova despesa ou receita registrada."
       }
-    ))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: handleSave, style: { minWidth: 160 } }, saved ? "\u2713 Salvo!" : "Salvar Altera\xE7\xF5es"))), tab === "dashboard" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 4 } }, "Widgets do Dashboard"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Escolha quais cards aparecem na tela inicial"), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "saldo_total", label: "Saldo Total", desc: "Patrim\xF4nio l\xEDquido consolidado de todas as contas." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "fluxo_mensal", label: "Fluxo do M\xEAs", desc: "Gr\xE1fico de entradas e sa\xEDdas do m\xEAs atual." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "orcamentos", label: "Or\xE7amentos", desc: "Progresso de gastos por categoria." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "faturas", label: "Faturas de Cart\xE3o", desc: "Resumo das faturas abertas e pr\xF3ximas." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "metas", label: "Metas Financeiras", desc: "Progresso dos seus objetivos de economia." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "graficos", label: "Gr\xE1ficos", desc: "An\xE1lise visual de gastos por categoria." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "alertas", label: "Alertas", desc: "Painel de alertas financeiros importantes." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "proximas_contas", label: "Pr\xF3ximas Contas", desc: "Despesas recorrentes programadas." })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: handleSave, style: { minWidth: 160 } }, saved ? "\u2713 Salvo!" : "Salvar Altera\xE7\xF5es"))), tab === "seguranca" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "Alterar Senha"), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Senha Atual" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nova Senha" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Confirmar Nova Senha" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: showSaved }, saved ? "\u2713 Alterado!" : "Alterar Senha")), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 4 } }, "Sess\xF5es Ativas"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Dispositivos conectados \xE0 sua conta"), [
+    ))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: handleSave, style: { minWidth: 160 } }, saved ? "\u2713 Salvo!" : "Salvar Altera\xE7\xF5es"))), tab === "dashboard" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 4 } }, "Widgets do Dashboard"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Escolha quais cards aparecem na tela inicial"), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "saldo_total", label: "Saldo Total", desc: "Patrim\xF4nio l\xEDquido consolidado de todas as contas." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "fluxo_mensal", label: "Fluxo do M\xEAs", desc: "Gr\xE1fico de entradas e sa\xEDdas do m\xEAs atual." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "orcamentos", label: "Or\xE7amentos", desc: "Progresso de gastos por categoria." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "faturas", label: "Faturas de Cart\xE3o", desc: "Resumo das faturas abertas e pr\xF3ximas." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "metas", label: "Metas Financeiras", desc: "Progresso dos seus objetivos de economia." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "graficos", label: "Gr\xE1ficos", desc: "An\xE1lise visual de gastos por categoria." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "alertas", label: "Alertas", desc: "Painel de alertas financeiros importantes." }), /* @__PURE__ */ import_react.default.createElement(WidgetRow, { k: "proximas_contas", label: "Pr\xF3ximas Contas", desc: "Despesas recorrentes programadas." })), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "flex-end" } }, /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: handleSave, style: { minWidth: 160 } }, saved ? "\u2713 Salvo!" : "Salvar Altera\xE7\xF5es"))), tab === "plano" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 } }, "Plano atual"), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 24, fontWeight: 700, color: (authUser2 == null ? void 0 : authUser2.plan) === "pro" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_monthly" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_yearly" ? "var(--gold)" : "var(--text2)" } }, (authUser2 == null ? void 0 : authUser2.plan) === "pro" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_monthly" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_yearly" ? "PRO" : "FREE"), ((authUser2 == null ? void 0 : authUser2.plan) === "pro" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_monthly" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_yearly") && /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 9, fontWeight: 800, background: "var(--gold-dim)", color: "var(--gold)", padding: "3px 10px", borderRadius: 99, textTransform: "uppercase", letterSpacing: "0.1em" } }, "Ativo"))), !((authUser2 == null ? void 0 : authUser2.plan) === "pro" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_monthly" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_yearly") && /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: () => {
+      window.dispatchEvent(new CustomEvent("fos-upgrade"));
+    } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "star", s: 14 }), "Fazer upgrade")), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 } }, [
+      { label: "Transa\xE7\xF5es", free: "At\xE9 30/m\xEAs", pro: "Ilimitadas" },
+      { label: "Contas banc\xE1rias", free: "At\xE9 2", pro: "Ilimitadas" },
+      { label: "Cart\xF5es", free: "1 cart\xE3o", pro: "Ilimitados" },
+      { label: "Metas", free: "At\xE9 2", pro: "Ilimitadas" },
+      { label: "Or\xE7amentos", free: "At\xE9 3", pro: "Ilimitados" },
+      { label: "Relat\xF3rios", free: "Bloqueado", pro: "Completo" },
+      { label: "Chat IA", free: "B\xE1sico", pro: "Completo" },
+      { label: "Exportar dados", free: "\u2014", pro: "Em breve" }
+    ].map((f, i) => /* @__PURE__ */ import_react.default.createElement("div", { key: i, style: { padding: "12px 24px", borderBottom: "1px solid var(--border)", borderRight: i % 2 === 0 ? "1px solid var(--border)" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--text2)" } }, f.label), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, fontWeight: 600, color: (authUser2 == null ? void 0 : authUser2.plan) === "pro" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_monthly" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_yearly" ? "var(--green)" : "var(--text3)" } }, (authUser2 == null ? void 0 : authUser2.plan) === "pro" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_monthly" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_yearly" ? f.pro : f.free))))), !((authUser2 == null ? void 0 : authUser2.plan) === "pro" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_monthly" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_yearly") && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 } }, [
+      { key: "pro_monthly", label: "Mensal", price: "R$ 29,90", period: "/m\xEAs", badge: null },
+      { key: "pro_yearly", label: "Anual", price: "R$ 19,90", period: "/m\xEAs", badge: "Economize 33%" }
+    ].map((plan) => /* @__PURE__ */ import_react.default.createElement("div", { key: plan.key, style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "20px 24px", position: "relative", overflow: "hidden" } }, plan.badge && /* @__PURE__ */ import_react.default.createElement("div", { style: { position: "absolute", top: 12, right: 12, fontSize: 9, fontWeight: 800, background: "var(--gold)", color: "#000", padding: "3px 10px", borderRadius: 99, textTransform: "uppercase", letterSpacing: "0.08em" } }, plan.badge), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 } }, "PRO ", plan.label), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "baseline", gap: 4, marginBottom: 16 } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 28, fontWeight: 700, color: "var(--gold)" } }, plan.price), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--text3)" } }, plan.period)), /* @__PURE__ */ import_react.default.createElement(Btn, { style: { width: "100%" }, onClick: () => {
+      const link = STRIPE_CONFIG.paymentLinks[plan.key];
+      if (link) {
+        const sep = link.includes("?") ? "&" : "?";
+        window.location.href = link + sep + "prefilled_email=" + encodeURIComponent((authUser2 == null ? void 0 : authUser2.email) || "") + "&client_reference_id=" + ((authUser2 == null ? void 0 : authUser2.id) || "") + "&success_url=" + encodeURIComponent(STRIPE_CONFIG.successUrl);
+      }
+    } }, "Assinar ", plan.label)))), ((authUser2 == null ? void 0 : authUser2.plan) === "pro" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_monthly" || (authUser2 == null ? void 0 : authUser2.plan) === "pro_yearly") && /* @__PURE__ */ import_react.default.createElement("div", { className: "card", style: { border: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 4 } }, "Cancelar assinatura"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Ao cancelar, voc\xEA mant\xE9m acesso Pro at\xE9 o fim do per\xEDodo pago. Ap\xF3s isso, sua conta volta para o plano Free."), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", style: { borderColor: "var(--red)", color: "var(--red)" }, onClick: () => {
+      if (window.confirm("Cancelar assinatura Pro? Voc\xEA continuar\xE1 com acesso at\xE9 o fim do per\xEDodo pago.")) {
+        window.open("https://billing.stripe.com/p/login/test_28o5kv4Dh7Lm9Mk144", "_blank");
+      }
+    } }, "Gerenciar assinatura no Stripe"))), tab === "seguranca" && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 14 } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 16 } }, "Alterar Senha"), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Senha Atual" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nova Senha" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Confirmar Nova Senha" }, /* @__PURE__ */ import_react.default.createElement("input", { type: "password", placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" })), /* @__PURE__ */ import_react.default.createElement(Btn, { onClick: showSaved }, saved ? "\u2713 Alterado!" : "Alterar Senha")), /* @__PURE__ */ import_react.default.createElement("div", { className: "card" }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { marginBottom: 4 } }, "Sess\xF5es Ativas"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Dispositivos conectados \xE0 sua conta"), [
       { device: "Chrome \u2014 Windows", local: "It\xE1, SC", time: "Agora", current: true },
       { device: "Safari \u2014 iPhone", local: "It\xE1, SC", time: "H\xE1 2h" }
     ].map((s, i) => /* @__PURE__ */ import_react.default.createElement("div", { key: i, style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < 1 ? "1px solid var(--border)" : "none" } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, fontWeight: 600 } }, s.device, " ", s.current && /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 10, background: "var(--green-dim)", color: "var(--green)", padding: "2px 8px", borderRadius: 99, marginLeft: 6 } }, "Atual")), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text2)", marginTop: 2 } }, s.local, " \xB7 ", s.time)), !s.current && /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", size: "sm" }, "Encerrar")))), /* @__PURE__ */ import_react.default.createElement("div", { className: "card", style: { border: "1px solid var(--red-dim)" } }, /* @__PURE__ */ import_react.default.createElement("div", { className: "card-title", style: { color: "var(--red)", marginBottom: 4 } }, "Zona de Perigo"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 16 } }, "Estas a\xE7\xF5es s\xE3o irrevers\xEDveis. Proceda com cuidado."), /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--surface2)", borderRadius: 10, padding: "14px 16px", marginBottom: 12 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontWeight: 600, fontSize: 13, color: "var(--text)", marginBottom: 4 } }, "Zerar todos os dados"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Remove todas as transa\xE7\xF5es, contas, cart\xF5es e metas. Mant\xE9m sua conta ativa."), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger", onClick: () => {
@@ -5927,4 +5997,10 @@ ${catInfo}`);
   var root = import_client.default.createRoot(document.getElementById("root"));
   root.render(import_react.default.createElement(AppWithBoundary));
 })();
-</script></body></html>
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+  }
+</script>
+</body></html>
