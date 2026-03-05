@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-115305 -->
+<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-115710 -->
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/><title>FinanceOS</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f0b429'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='serif' fill='%23000'>F</text></svg>"/>
@@ -4820,6 +4820,63 @@ ${catInfo}`);
       /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: item.icon, s: 14, c: "var(--text3)" }), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 13 } }, item.label)),
       /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--text3)" } }, "\u203A")
     )))), /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: "14px 18px", display: "flex", gap: 12 } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 16, flexShrink: 0, marginTop: 1 } }, "\u{1F4CD}"), /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 } }, "Atribui\xE7\xE3o Inteligente"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text2)", lineHeight: 1.65 } }, "Compras antes do fechamento v\xE3o para a fatura atual. Ap\xF3s o fechamento, para a pr\xF3xima."))))));
+  }
+  function AccountsPage({ accs, setAccs, txs, computeBalance, fmt: fmt2, fmtDate: fmtDate2, isPro = true, onUpgrade: onUpgrade2 }) {
+    const [modal, setModal] = (0, import_react.useState)(null);
+    const [confirm, setConfirm] = (0, import_react.useState)(null);
+    const [form, setForm] = (0, import_react.useState)({ name: "", type: "checking", bank_name: "", initial_balance: "" });
+    const f = (k, v) => setForm((p) => __spreadProps(__spreadValues({}, p), { [k]: v }));
+    const TYPE_LABEL = { checking: "Corrente", savings: "Poupan\xE7a", cash: "Dinheiro", investment: "Investimento" };
+    const TYPE_COLOR = { checking: "var(--blue)", savings: "var(--green)", cash: "var(--gold)", investment: "var(--purple)" };
+    const TYPE_ICON = { checking: "accounts", savings: "save", cash: "wallet", investment: "reports" };
+    const totalLiquid = accs.filter((a) => a.active && a.type !== "investment").reduce((s, a) => s + computeBalance(a.id), 0);
+    const totalInvest = accs.filter((a) => a.active && a.type === "investment").reduce((s, a) => s + computeBalance(a.id), 0);
+    const totalAll = accs.filter((a) => a.active).reduce((s, a) => s + computeBalance(a.id), 0);
+    const openEdit = (acc) => {
+      setForm(__spreadProps(__spreadValues({}, acc), { initial_balance: String(acc.initial_balance) }));
+      setModal(acc);
+    };
+    const openNew = () => {
+      setForm({ name: "", type: "checking", bank_name: "", initial_balance: "" });
+      setModal("new");
+    };
+    const save = () => {
+      if (!form.name) return;
+      const d = __spreadProps(__spreadValues({}, form), { initial_balance: parseFloat(form.initial_balance) || 0, tenant_id: TID, active: true });
+      if (modal === "new") setAccs((a) => [...a, __spreadProps(__spreadValues({}, d), { id: uid() })]);
+      else setAccs((a) => a.map((ac) => ac.id === form.id ? __spreadValues(__spreadValues({}, ac), d) : ac));
+      setModal(null);
+    };
+    const toggle = (id) => setAccs((a) => a.map((ac) => ac.id === id ? __spreadProps(__spreadValues({}, ac), { active: !ac.active }) : ac));
+    const del = (id) => {
+      setAccs((a) => a.filter((ac) => ac.id !== id));
+      setConfirm(null);
+    };
+    return /* @__PURE__ */ import_react.default.createElement("div", null, confirm && /* @__PURE__ */ import_react.default.createElement(Confirm, { msg: `Remover "${confirm.name}"?`, onOk: () => del(confirm.id), onCancel: () => setConfirm(null) }), modal && /* @__PURE__ */ import_react.default.createElement(Modal, { title: modal === "new" ? "Nova Conta" : "Editar Conta", onClose: () => setModal(null), width: 480 }, /* @__PURE__ */ import_react.default.createElement(Field, { label: "Nome da conta" }, /* @__PURE__ */ import_react.default.createElement("input", { value: form.name, onChange: (e) => f("name", e.target.value), placeholder: "Ex: Nubank, Bradesco..." })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Tipo" }, /* @__PURE__ */ import_react.default.createElement("select", { value: form.type, onChange: (e) => f("type", e.target.value) }, Object.entries(TYPE_LABEL).map(([k, v]) => /* @__PURE__ */ import_react.default.createElement("option", { key: k, value: k }, v)))), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Banco / Institui\xE7\xE3o" }, /* @__PURE__ */ import_react.default.createElement("input", { value: form.bank_name, onChange: (e) => f("bank_name", e.target.value), placeholder: "Ex: Nubank, XP, Carteira..." })), /* @__PURE__ */ import_react.default.createElement(Field, { label: "Saldo inicial" }, /* @__PURE__ */ import_react.default.createElement(CurrencyInput, { value: form.initial_balance, onChange: (v) => f("initial_balance", v) })), /* @__PURE__ */ import_react.default.createElement("div", { className: "modal-footer" }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", onClick: () => setModal(null) }, "Cancelar"), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "primary", onClick: save }, "Salvar"))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("h1", { style: { margin: 0, fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" } }, "Contas"), /* @__PURE__ */ import_react.default.createElement("p", { style: { margin: "4px 0 0", fontSize: 13, color: "var(--text2)" } }, accs.filter((a) => a.active).length, " conta", accs.filter((a) => a.active).length !== 1 ? "s" : "", " ativa", accs.filter((a) => a.active).length !== 1 ? "s" : "")), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "primary", onClick: openNew }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "plus", s: 14, c: "#000" }), "Nova Conta")), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24 } }, [
+      { label: "Saldo L\xEDquido", value: totalLiquid, color: "var(--green)" },
+      { label: "Investimentos", value: totalInvest, color: "var(--purple)" },
+      { label: "Patrim\xF4nio Total", value: totalAll, color: "var(--gold)" }
+    ].map((k) => /* @__PURE__ */ import_react.default.createElement("div", { key: k.label, style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "18px 20px", position: "relative", overflow: "hidden" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: 2, background: k.color, borderRadius: "12px 12px 0 0" } }), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, fontWeight: 700, color: "var(--text3)", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 8 } }, k.label), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 22, fontWeight: 700, color: k.color, letterSpacing: "-0.02em" } }, fmt2(k.value))))), /* @__PURE__ */ import_react.default.createElement("div", { className: "auto-grid-280" }, accs.map((acc) => {
+      const bal = computeBalance(acc.id);
+      const color = TYPE_COLOR[acc.type] || "var(--text2)";
+      const lastTxs = txs.filter((t) => t.account_id === acc.id).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
+      return /* @__PURE__ */ import_react.default.createElement("div", { key: acc.id, className: "acc-card", style: { opacity: acc.active ? 1 : 0.5, position: "relative", overflow: "hidden" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: 3, background: color, borderRadius: "var(--radius) var(--radius) 0 0" } }), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 13, fontWeight: 700, color: "var(--text)" } }, acc.name), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text3)", marginTop: 2 } }, acc.bank_name || TYPE_LABEL[acc.type])), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 9, fontWeight: 700, color, background: `${color}22`, padding: "2px 8px", borderRadius: 99, textTransform: "uppercase", letterSpacing: "0.08em" } }, TYPE_LABEL[acc.type])), /* @__PURE__ */ import_react.default.createElement("div", { className: "acc-balance", style: { color: bal < 0 ? "var(--red)" : "var(--text)" } }, fmt2(bal)), lastTxs.length > 0 && /* @__PURE__ */ import_react.default.createElement("div", { style: { marginTop: 12, borderTop: "1px solid var(--border)", paddingTop: 10 } }, lastTxs.map((t) => /* @__PURE__ */ import_react.default.createElement("div", { key: t.id, style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" } }, t.description), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 600, color: t.type === "income" ? "var(--green)" : "var(--red)", flexShrink: 0 } }, t.type === "income" ? "+" : "\u2212", fmt2(t.amount))))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 6, marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--border)" } }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", onClick: () => openEdit(acc), style: { flex: 1, fontSize: 11, padding: "6px 0" } }, "Editar"), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", onClick: () => toggle(acc.id), style: { flex: 1, fontSize: 11, padding: "6px 0" } }, acc.active ? "Ocultar" : "Ativar"), /* @__PURE__ */ import_react.default.createElement(
+        "button",
+        {
+          onClick: () => setConfirm(acc),
+          style: { width: 30, height: 30, borderRadius: 7, border: "1px solid transparent", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text3)", flexShrink: 0 },
+          onMouseEnter: (e) => {
+            e.currentTarget.style.background = "var(--red-dim)";
+            e.currentTarget.style.color = "#ef4444";
+          },
+          onMouseLeave: (e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "var(--text3)";
+          }
+        },
+        /* @__PURE__ */ import_react.default.createElement(Ic, { n: "trash", s: 12 })
+      )));
+    })));
   }
   function BudgetsPage({ bgs, setBgs, cats, setCats, txs, fmt: fmt2, isPro = true, onUpgrade: onUpgrade2 }) {
     const [modal, setModal] = (0, import_react.useState)(null);
