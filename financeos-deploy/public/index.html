@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-121120 -->
+<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-122127 -->
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/><title>FinanceOS</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23f0b429'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='serif' fill='%23000'>F</text></svg>"/>
@@ -1238,15 +1238,15 @@
   .kpi-sat-delta { font-size: 11px; color: var(--text2); margin-top: 4px; }
   /* TX FILTER BAR */
   .tx-filter-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
-  .tx-filter-top  { display: flex; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); align-items: center; }
-  .tx-filter-pills { display: flex; gap: 4px; padding: 10px 14px; align-items: center; flex-wrap: wrap; }
+  .tx-filter-top  { display: flex; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); align-items: center; }
+  .tx-filter-pills { display: flex; gap: 6px; padding: 10px 18px; align-items: center; flex-wrap: wrap; }
 
   /* TX TYPE PILL */
-  .tx-pill { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: var(--surface2); color: var(--text2); cursor: pointer; transition: all 0.12s; white-space: nowrap; font-family: var(--font-body); }
+  .tx-pill { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 99px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: var(--surface2); color: var(--text2); cursor: pointer; transition: all 0.12s; white-space: nowrap; font-family: var(--font-body); }
   .tx-pill:hover { border-color: var(--border2); color: var(--text); }
 
   /* TX DATE GROUP SEPARATOR */
-  .tx-date-group { padding: 6px 20px 5px; font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .tx-date-group { padding: 8px 20px 7px; border-left: 3px solid var(--border2); font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; background: var(--surface2); border-bottom: 1px solid var(--border); }
 
   /* TX AMOUNT */
   .tx-amt { font-family: var(--font-mono); font-size: 17px; font-weight: 700; letter-spacing: -0.02em; text-align: right; }
@@ -3868,7 +3868,7 @@ ${catInfo}`);
       const dt = /* @__PURE__ */ new Date(d + "T12:00:00");
       return dt.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
     };
-    return /* @__PURE__ */ import_react.default.createElement("div", null, delConfirm && /* @__PURE__ */ import_react.default.createElement(Modal, { title: "Excluir Transa\xE7\xE3o", onClose: () => setDelConfirm(null), width: 380 }, /* @__PURE__ */ import_react.default.createElement("p", { style: { color: "var(--text2)", marginBottom: 20 } }, "Excluir ", /* @__PURE__ */ import_react.default.createElement("strong", null, delConfirm.description), "? Esta a\xE7\xE3o n\xE3o pode ser desfeita."), /* @__PURE__ */ import_react.default.createElement("div", { className: "modal-footer" }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", onClick: () => setDelConfirm(null) }, "Cancelar"), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger", onClick: () => deleteTx(delConfirm.id) }, "Excluir"))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("h1", { style: { margin: 0, fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" } }, "Transa\xE7\xF5es"), /* @__PURE__ */ import_react.default.createElement("p", { style: { margin: "4px 0 0", fontSize: 13, color: "var(--text2)" } }, filtered.length, " resultado", filtered.length !== 1 ? "s" : "", activeFilters > 0 && /* @__PURE__ */ import_react.default.createElement("span", { style: { marginLeft: 8, color: "var(--gold)", fontSize: 11, fontWeight: 700 } }, activeFilters, " filtro", activeFilters > 1 ? "s" : "", " ativo", activeFilters > 1 ? "s" : "")))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 20 } }, [
+    return /* @__PURE__ */ import_react.default.createElement("div", null, delConfirm && /* @__PURE__ */ import_react.default.createElement(Modal, { title: "Excluir Transa\xE7\xE3o", onClose: () => setDelConfirm(null), width: 380 }, /* @__PURE__ */ import_react.default.createElement("p", { style: { color: "var(--text2)", marginBottom: 20 } }, "Excluir ", /* @__PURE__ */ import_react.default.createElement("strong", null, delConfirm.description), "? Esta a\xE7\xE3o n\xE3o pode ser desfeita."), /* @__PURE__ */ import_react.default.createElement("div", { className: "modal-footer" }, /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "ghost", onClick: () => setDelConfirm(null) }, "Cancelar"), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger", onClick: () => deleteTx(delConfirm.id) }, "Excluir"))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 } }, /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("h1", { style: { margin: 0, fontSize: 22, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em" } }, "Transa\xE7\xF5es"), /* @__PURE__ */ import_react.default.createElement("p", { style: { margin: "4px 0 0", fontSize: 13, color: "var(--text2)" } }, filtered.length, " resultado", filtered.length !== 1 ? "s" : "", activeFilters > 0 && /* @__PURE__ */ import_react.default.createElement("span", { style: { marginLeft: 8, color: "var(--gold)", fontSize: 11, fontWeight: 700 } }, activeFilters, " filtro", activeFilters > 1 ? "s" : "", " ativo", activeFilters > 1 ? "s" : "")))), /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 20 } }, [
       { label: "Entradas", value: kpiIncome, color: "var(--green)", bg: "var(--green-dim)", sign: "+" },
       { label: "Sa\xEDdas", value: kpiExpense, color: "var(--red)", bg: "var(--red-dim)", sign: "\u2212" },
       { label: "Saldo", value: Math.abs(kpiBalance), color: kpiBalance >= 0 ? "var(--green)" : "var(--red)", bg: kpiBalance >= 0 ? "var(--green-dim)" : "var(--red-dim)", sign: kpiBalance >= 0 ? "+" : "\u2212" },
@@ -4004,11 +4004,10 @@ ${catInfo}`);
         style: { padding: "7px 16px", borderRadius: 8, border: "1px solid var(--red-dim)", background: "var(--red-dim)", color: "var(--red)", fontSize: 12, fontWeight: 600, cursor: "pointer" }
       },
       "Limpar todos os filtros"
-    )))), /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "90px 1fr 110px 120px 140px 48px", padding: "10px 20px", background: "var(--surface2)", borderBottom: "1px solid var(--border)" } }, [
+    )))), /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, overflow: "hidden" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "grid", gridTemplateColumns: "80px 1fr 100px minmax(120px,160px) 48px", padding: "11px 20px", background: "var(--surface2)", borderBottom: "1px solid var(--border)" } }, [
       { label: "Data", field: "date" },
       { label: "Descri\xE7\xE3o", field: "description" },
       { label: "Tipo", field: "type" },
-      { label: "Conta", field: "account_id" },
       { label: "Valor", field: "amount", align: "right" },
       { label: "", field: null }
     ].map((col) => /* @__PURE__ */ import_react.default.createElement(
@@ -4030,7 +4029,7 @@ ${catInfo}`);
         }
       },
       col.label,
-      col.field && /* @__PURE__ */ import_react.default.createElement("span", { style: { marginLeft: 3, fontSize: 9, opacity: sortField === col.field ? 1 : 0.25 } }, sortField === col.field && sortDir === "asc" ? "\u25B2" : "\u25BC")
+      col.field && /* @__PURE__ */ import_react.default.createElement("span", { style: { marginLeft: 3, fontSize: 9, opacity: sortField === col.field ? 1 : 0.25 } }, sortField === col.field ? sortDir === "asc" ? "\u2191" : "\u2193" : "\u2195")
     ))), paged.length === 0 && /* @__PURE__ */ import_react.default.createElement("div", { style: { textAlign: "center", padding: "52px 24px" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 36, marginBottom: 12 } }, "\u{1F50D}"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontWeight: 600, fontSize: 14, color: "var(--text2)", marginBottom: 4 } }, "Nenhuma transa\xE7\xE3o encontrada"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text3)", marginBottom: 16 } }, "Tente ajustar os filtros"), activeFilters > 0 && /* @__PURE__ */ import_react.default.createElement("button", { onClick: clearFilters, style: { padding: "7px 16px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface2)", color: "var(--text)", fontSize: 12, cursor: "pointer" } }, "Limpar filtros")), grouped.map((item) => {
       if (item.type === "separator") {
         return /* @__PURE__ */ import_react.default.createElement("div", { key: item.key, className: "tx-date-group" }, fmtGroupDate(item.date));
@@ -4055,17 +4054,24 @@ ${catInfo}`);
           key: t.id,
           style: {
             display: "grid",
-            gridTemplateColumns: "90px 1fr 110px 120px 140px 48px",
-            padding: "13px 20px",
+            gridTemplateColumns: "80px 1fr 100px minmax(120px,160px) 48px",
+            padding: "14px 20px",
             borderBottom: "1px solid var(--border)",
+            borderLeft: "3px solid transparent",
             background: isPending ? "rgba(240,180,41,0.025)" : "transparent",
-            transition: "background 0.1s",
+            transition: "background 0.1s, border-left-color 0.1s",
             alignItems: "center"
           },
-          onMouseEnter: (e) => e.currentTarget.style.background = "var(--surface2)",
-          onMouseLeave: (e) => e.currentTarget.style.background = isPending ? "rgba(240,180,41,0.025)" : "transparent"
+          onMouseEnter: (e) => {
+            e.currentTarget.style.background = "var(--surface2)";
+            e.currentTarget.style.borderLeftColor = cfg.color || "var(--border2)";
+          },
+          onMouseLeave: (e) => {
+            e.currentTarget.style.background = isPending ? "rgba(240,180,41,0.025)" : "transparent";
+            e.currentTarget.style.borderLeftColor = "transparent";
+          }
         },
-        /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1.1 } }, dayNum, " ", /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, fontWeight: 500, color: "var(--text2)" } }, monthStr)), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "var(--text3)", marginTop: 3, textTransform: "uppercase", letterSpacing: "0.06em" } }, dtObj ? dtObj.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "") : "")),
+        /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontFamily: "var(--font-mono)", fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1.2 } }, dayNum, " ", /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, fontWeight: 500, color: "var(--text2)" } }, monthStr)), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 9, color: "var(--text3)", marginTop: 3, textTransform: "uppercase", letterSpacing: "0.08em" } }, dtObj ? dtObj.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "") : "")),
         /* @__PURE__ */ import_react.default.createElement("div", { style: { minWidth: 0, paddingRight: 12 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", alignItems: "center", gap: 9 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { width: 32, height: 32, borderRadius: 10, background: cfg.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: (cat == null ? void 0 : cat.icon) || "expense", s: 14, c: cfg.color })), /* @__PURE__ */ import_react.default.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ import_react.default.createElement("div", { style: {
           fontSize: 13,
           fontWeight: 600,
@@ -4073,7 +4079,7 @@ ${catInfo}`);
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap"
-        } }, t.description, isPending && /* @__PURE__ */ import_react.default.createElement("span", { style: { marginLeft: 6, fontSize: 9, background: "var(--gold-dim)", color: "var(--gold)", padding: "1px 6px", borderRadius: 99, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em" } }, "pendente")), cat && /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text3)", marginTop: 1 } }, cat.name)))),
+        } }, t.description, isPending && /* @__PURE__ */ import_react.default.createElement("span", { style: { marginLeft: 6, fontSize: 9, background: "var(--gold-dim)", color: "var(--gold)", padding: "1px 6px", borderRadius: 99, fontWeight: 700, verticalAlign: "middle" } }, "PENDENTE")), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text3)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, [cat == null ? void 0 : cat.name, acctLabel !== "\u2014" ? acctLabel : null].filter(Boolean).join(" \xB7 "))))),
         /* @__PURE__ */ import_react.default.createElement("div", null, /* @__PURE__ */ import_react.default.createElement("span", { style: {
           display: "inline-flex",
           alignItems: "center",
@@ -4086,22 +4092,19 @@ ${catInfo}`);
           background: cfg.bg,
           color: cfg.color
         } }, cfg.label)),
-        /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 11, color: "var(--text3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, acctLabel),
-        /* @__PURE__ */ import_react.default.createElement("div", { className: amtClass, style: { textAlign: "right" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 11, marginRight: 1, opacity: 0.8 } }, sign), fmt2(t.amount)),
+        /* @__PURE__ */ import_react.default.createElement("div", { className: amtClass, style: { textAlign: "right" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 13, fontWeight: 700, marginRight: 1 } }, sign), fmt2(t.amount)),
         /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", justifyContent: "center" } }, /* @__PURE__ */ import_react.default.createElement(
           "button",
           {
             onClick: () => setDelConfirm(t),
-            style: { width: 28, height: 28, borderRadius: 7, border: "1px solid transparent", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text3)", transition: "all 0.12s" },
+            style: { width: 28, height: 28, borderRadius: 7, border: "1px solid transparent", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text3)", transition: "all 0.15s" },
             onMouseEnter: (e) => {
               e.currentTarget.style.background = "var(--red-dim)";
               e.currentTarget.style.color = "#ef4444";
-              e.currentTarget.style.borderColor = "rgba(239,68,68,0.2)";
             },
             onMouseLeave: (e) => {
               e.currentTarget.style.background = "transparent";
               e.currentTarget.style.color = "var(--text3)";
-              e.currentTarget.style.borderColor = "transparent";
             }
           },
           /* @__PURE__ */ import_react.default.createElement(Ic, { n: "trash", s: 13 })
@@ -4144,7 +4147,26 @@ ${catInfo}`);
         style: { padding: "5px 11px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--surface)", color: page === totalPages ? "var(--text3)" : "var(--text)", fontSize: 12, cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.4 : 1 }
       },
       "\u2192"
-    )))), filtered.length > 0 && /* @__PURE__ */ import_react.default.createElement("div", { style: { display: "flex", gap: 20, marginTop: 12, justifyContent: "flex-end", padding: "0 4px" } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--text3)" } }, "Total entradas: ", /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--green)", fontSize: 13 } }, fmt2(kpiIncome))), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--text3)" } }, "Total sa\xEDdas: ", /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--red)", fontSize: 13 } }, fmt2(kpiExpense))), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 12, color: "var(--text3)" } }, "Saldo: ", /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontWeight: 700, color: kpiBalance >= 0 ? "var(--green)" : "var(--red)", fontSize: 13 } }, kpiBalance >= 0 ? "+" : "", fmt2(kpiBalance)))));
+    )))), filtered.length > 0 && /* @__PURE__ */ import_react.default.createElement("div", { style: {
+      display: "flex",
+      gap: 0,
+      marginTop: 12,
+      background: "var(--surface)",
+      border: "1px solid var(--border)",
+      borderRadius: 12,
+      overflow: "hidden"
+    } }, [
+      { label: "Entradas", value: kpiIncome, color: "var(--green)", sign: "+" },
+      { label: "Sa\xEDdas", value: kpiExpense, color: "var(--red)", sign: "\u2212" },
+      { label: "Saldo", value: Math.abs(kpiBalance), color: kpiBalance >= 0 ? "var(--green)" : "var(--red)", sign: kpiBalance >= 0 ? "=" : "-" }
+    ].map((k, i) => /* @__PURE__ */ import_react.default.createElement("div", { key: k.label, style: {
+      flex: 1,
+      padding: "12px 20px",
+      borderRight: i < 2 ? "1px solid var(--border)" : "none",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between"
+    } }, /* @__PURE__ */ import_react.default.createElement("span", { style: { fontSize: 11, color: "var(--text3)" } }, k.label), /* @__PURE__ */ import_react.default.createElement("span", { style: { fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, color: k.color } }, k.sign, " ", fmt2(k.value))))));
   }
   function DashboardPage({ accs, cats, ccs, bills, txs, bgs, goals, computeBalance, curr, prev, totalLiquid, totalAssets, saving, fmt: fmt2, fmtDate: fmtDate2, fmtShort: fmtShort2, dashWidgets = {} }) {
     const show = (k) => dashWidgets[k] !== false;
