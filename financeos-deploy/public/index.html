@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-200532 -->
+<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-200933 -->
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -5987,14 +5987,17 @@ ${catInfo}`);
         setGoals(fresh.goals);
       }
     } }, /* @__PURE__ */ import_react.default.createElement(Ic, { n: "trash", s: 14 }), "Zerar Todos os Dados")), /* @__PURE__ */ import_react.default.createElement("div", { style: { background: "var(--surface2)", borderRadius: 10, padding: "14px 16px" } }, /* @__PURE__ */ import_react.default.createElement("div", { style: { fontWeight: 600, fontSize: 13, color: "var(--red)", marginBottom: 4 } }, "Excluir conta permanentemente"), /* @__PURE__ */ import_react.default.createElement("div", { style: { fontSize: 12, color: "var(--text2)", marginBottom: 12 } }, "Apaga sua conta e todos os dados associados. N\xE3o \xE9 poss\xEDvel recuperar."), /* @__PURE__ */ import_react.default.createElement(Btn, { variant: "danger", onClick: async () => {
-      var _a, _b;
       if (!window.confirm("ATEN\xC7\xC3O: Isso vai excluir sua conta permanentemente. Tem certeza absoluta?")) return;
       if (!window.confirm("\xDAltima confirma\xE7\xE3o: todos os seus dados ser\xE3o perdidos para sempre. Continuar?")) return;
       const supa = getSupa();
       if (supa && (authUser2 == null ? void 0 : authUser2.id) && authUser2.id !== "demo-user-1") {
         await supa.from("user_data").delete().eq("user_id", authUser2.id);
-        await ((_b = (_a = supa.auth.admin) == null ? void 0 : _a.deleteUser) == null ? void 0 : _b.call(_a, authUser2.id).catch(() => {
-        }));
+        await fetch("/api/delete-account", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: authUser2.id })
+        }).catch(() => {
+        });
         await supa.auth.signOut();
       }
       onLogout2();
