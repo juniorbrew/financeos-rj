@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-173841 -->
+<!DOCTYPE html><html lang="pt-BR" data-theme="dark"><!-- build:20260305-200532 -->
 <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -3611,9 +3611,13 @@ ${catInfo}`);
     (0, import_react.useEffect)(() => {
       const supa = getSupa();
       if (!supa) return;
-      supa.auth.getSession().then(async ({ data: { session } }) => {
+      const loadUser = async (session) => {
         var _a, _b;
-        if (!(session == null ? void 0 : session.user)) return;
+        if (!(session == null ? void 0 : session.user)) {
+          setAuthUser(null);
+          setScreen("landing");
+          return;
+        }
         const userId = session.user.id;
         const { data: row } = await supa.from("user_data").select("data").eq("user_id", userId).single();
         const stored = (row == null ? void 0 : row.data) || {};
@@ -3628,12 +3632,14 @@ ${catInfo}`);
           data: userData
         });
         setScreen("app");
-      }).catch(() => {
+      };
+      supa.auth.getSession().then(({ data: { session } }) => loadUser(session)).catch(() => {
       });
-      const { data: { subscription } } = supa.auth.onAuthStateChange((event) => {
+      const { data: { subscription } } = supa.auth.onAuthStateChange((event, session) => {
         if (event === "SIGNED_OUT") {
           setAuthUser(null);
           setScreen("landing");
+        } else if (event === "SIGNED_IN" && session) {
         }
       });
       return () => subscription.unsubscribe();
@@ -3688,9 +3694,9 @@ ${catInfo}`);
         MainApp,
         {
           authUser: authUser2,
-          onLogout: () => {
+          onLogout: async () => {
             const s = getSupa();
-            if (s) s.auth.signOut();
+            if (s) await s.auth.signOut();
             setAuthUser(null);
             setScreen("landing");
           },
